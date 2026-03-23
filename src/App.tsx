@@ -3,8 +3,8 @@ import Header from './components/Header';
 import MapView from './components/MapView';
 import SpacePopup from './components/SpacePopup';
 import SubmitSpaceForm from './components/SubmitSpaceForm';
-import { fetchVerifiedSpaces, checkInToSpace, Space } from './lib/supabase';
- 
+import { fetchVerifiedSpaces, fetchLeaderboard, Space } from './lib/supabase';
+
 export default function App() {
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [selectedSpace, setSelectedSpace] = useState<Space | null>(null);
@@ -12,26 +12,43 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [isLoading, setIsLoading] = useState(true);
- 
-  useEffect(() => { loadSpaces(); }, []);
- 
+  const [activeFilter, setActiveFilter] = useState('All');
+  const [leaderboard, setLeaderboard] = useState<{ username: string; points: number }[]>([]);
+
+  useEffect(() => { loadSpaces(); loadLeaderboard(); }, []);
+
   const loadSpaces = async () => {
     setIsLoading(true);
     const data = await fetchVerifiedSpaces();
     setSpaces(data);
     setIsLoading(false);
   };
- 
-  const handleCheckIn = async (spaceId: string) => {
-    const success = await checkInToSpace(spaceId);
-    if (success) await loadSpaces();
+
+  const loadLeaderboard = async () => {
+    const data = await fetchLeaderboard();
+    setLeaderboard(data);
   };
- 
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setSearchQuery(searchInput);
   };
- 
+
+  const filters = ['All', 'Outdoor', 'Multi-faith', 'Business', 'Mosque'];
+
+  const filteredSpaces = spaces.filter(s => {
+    if (activeFilter === 'All') return true;
+    if (activeFilter === 'Outdoor') return s.type.toLowerCase().includes('outdoor');
+    if (activeFilter === 'Multi-faith') return s.type.toLowerCase().includes('multi');
+    if (activeFilter === 'Business') return s.type.toLowerCase().includes('business');
+    if (activeFilter === 'Mosque') return s.type.toLowerCase().includes('mosque');
+    return true;
+  });
+
+  const rankEmojis = ['🥇', '🥈', '🥉', '4', '5', '6', '7', '8', '9', '10'];
+  const rankColors = ['#E8A020', '#B0C4DE', '#CD9B6A', 'rgba(255,255,255,0.25)', 'rgba(255,255,255,0.25)'];
+  const avis = ['🦁', '🌙', '🌿', '🔥', '🕊️', '⭐', '🌊', '🏔️', '🌸', '✨'];
+
   const blue = '#2B7FD4';
   const blueDark = '#1A5FAA';
   const bluePale = '#EBF4FF';
@@ -39,40 +56,32 @@ export default function App() {
   const textLight = '#7A9BBF';
   const gold = '#E8A020';
   const green = '#22C55E';
- 
+
   const steps = [
     { n: '01', h: 'Find a space', p: 'Search by postcode, area or university. Fassah shows you verified prayer spaces near you with live check-in data so you know they are still active.' },
     { n: '02', h: 'Check in', p: 'When you visit a space, tap check in. This keeps the data live for the next person. Your check-in tells them: someone prayed here today.' },
     { n: '03', h: 'Add your spot', p: 'Know a quiet corner or multi-faith room that is not on the map? Submit it in 60 seconds. Every submission helps the whole ummah.' },
   ];
- 
+
   const types = [
-    { e: '\u{1F33F}', n: 'Outdoor', d: 'Parks & open spaces' },
-    { e: '\u{1F3E2}', n: 'Multi-faith Room', d: 'Unis & offices' },
-    { e: '\u{1F3EA}', n: 'Friendly Business', d: 'Shops & cafes' },
-    { e: '\u{1F3E0}', n: 'Community Home', d: 'Open to visitors' },
-    { e: '\u{1F54C}', n: 'Mosque', d: 'Verified masjids' },
+    { e: '🌿', n: 'Outdoor', d: 'Parks & open spaces' },
+    { e: '🏢', n: 'Multi-faith Room', d: 'Unis & offices' },
+    { e: '🏪', n: 'Friendly Business', d: 'Shops & cafes' },
+    { e: '🏠', n: 'Community Home', d: 'Open to visitors' },
+    { e: '🕌', n: 'Mosque', d: 'Verified masjids' },
   ];
- 
-  const leaders = [
-    { rank: '1', rankColor: gold, avi: '\u{1F981}', user: 'SilentLion_88', detail: '12 spaces - NW London', pts: '240 pts', badge: '\u{1F3C5}' },
-    { rank: '2', rankColor: '#B0C4DE', avi: '\u{1F319}', user: 'NightWalker_E1', detail: '9 spaces - East London', pts: '195 pts', badge: '\u{2B50}' },
-    { rank: '3', rankColor: '#CD9B6A', avi: '\u{1F33F}', user: 'PeacefulStep_21', detail: '7 spaces - Birmingham', pts: '162 pts', badge: '\u{2B50}' },
-    { rank: '4', rankColor: 'rgba(255,255,255,0.25)', avi: '\u{1F525}', user: 'QiblaSeeker_B12', detail: '5 spaces - Harrow', pts: '118 pts', badge: '' },
-    { rank: '5', rankColor: 'rgba(255,255,255,0.25)', avi: '\u{1F54A}', user: 'QuietCorner_M1', detail: '4 spaces - Manchester', pts: '94 pts', badge: '' },
-  ];
- 
+
   const ajarPoints = [
-    { icon: '\u{1F4CD}', text: 'Add a verified space and it could help hundreds of Muslims pray on time for years to come.' },
-    { icon: '\u{2705}', text: 'Check in to confirm a space is still active. Your 2 seconds keeps someone else from wasting 20 minutes.' },
-    { icon: '\u{1F4F8}', text: 'Add a photo so the next person knows exactly where to go. Clarity is an act of service.' },
-    { icon: '\u{1F932}', text: 'The Prophet said: Whoever guides someone to goodness will have a reward like the one who did it.' },
+    { icon: '📍', text: 'Add a verified space and it could help hundreds of Muslims pray on time for years to come.' },
+    { icon: '✅', text: 'Check in to confirm a space is still active. Your 2 seconds keeps someone else from wasting 20 minutes.' },
+    { icon: '📸', text: 'Add a photo so the next person knows exactly where to go. Clarity is an act of service.' },
+    { icon: '🤲', text: 'The Prophet said: Whoever guides someone to goodness will have a reward like the one who did it.' },
   ];
- 
+
   return (
     <div style={{ minHeight: '100vh', background: '#F6FAFE', fontFamily: 'system-ui, sans-serif' }}>
       <Header onAddSpace={() => setShowSubmitForm(true)} />
- 
+
       {/* MAP SECTION */}
       <div style={{ background: '#F6FAFE', paddingTop: '48px' }}>
         <div style={{
@@ -111,17 +120,33 @@ export default function App() {
               }}>Search</button>
             </form>
           </div>
- 
+
+          {/* FILTER PILLS — NOW WIRED */}
+          <div style={{ padding: '12px 24px', display: 'flex', gap: '8px', borderBottom: '1px solid #EDF3FB', flexWrap: 'wrap' }}>
+            {filters.map(f => (
+              <button key={f} onClick={() => setActiveFilter(f)} style={{
+                padding: '6px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: 600,
+                cursor: 'pointer', border: 'none', fontFamily: 'system-ui',
+                background: activeFilter === f ? blue : '#EBF4FF',
+                color: activeFilter === f ? 'white' : textMid,
+                transition: 'all 0.15s',
+              }}>{f}</button>
+            ))}
+            <span style={{ marginLeft: 'auto', fontSize: '12px', color: textLight, alignSelf: 'center' }}>
+              {filteredSpaces.length} space{filteredSpaces.length !== 1 ? 's' : ''}
+            </span>
+          </div>
+
           {isLoading ? (
             <div style={{ height: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#EBF4FF' }}>
               <p style={{ color: textMid, fontSize: '15px' }}>Loading prayer spaces...</p>
             </div>
           ) : (
             <div style={{ height: '400px' }}>
-              <MapView spaces={spaces} onSpaceClick={setSelectedSpace} searchQuery={searchQuery} />
+              <MapView spaces={filteredSpaces} onSpaceClick={setSelectedSpace} searchQuery={searchQuery} />
             </div>
           )}
- 
+
           <div style={{
             background: 'linear-gradient(90deg,#EBF4FF,#DCF0FF)',
             borderTop: '1px solid #C4DEFA', padding: '14px 24px',
@@ -138,7 +163,7 @@ export default function App() {
           </div>
         </div>
       </div>
- 
+
       {/* HOW IT WORKS */}
       <div style={{ background: 'white', padding: '100px 48px' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
@@ -157,7 +182,7 @@ export default function App() {
           </div>
         </div>
       </div>
- 
+
       {/* SPACE TYPES */}
       <div style={{ background: '#F6FAFE', padding: '100px 48px' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
@@ -179,8 +204,8 @@ export default function App() {
           </div>
         </div>
       </div>
- 
-      {/* AJAR / LEADERBOARD */}
+
+      {/* AJAR / LEADERBOARD — REAL DATA */}
       <div style={{ background: 'linear-gradient(170deg,#0A1628 0%,#0F2545 60%,#152E52 100%)', padding: '100px 48px', position: 'relative', overflow: 'hidden' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px', alignItems: 'start' }}>
           <div>
@@ -200,28 +225,36 @@ export default function App() {
               ))}
             </div>
           </div>
- 
+
           <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '22px', padding: '28px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-              <span style={{ fontSize: '15px', fontWeight: 700, color: 'white' }}>Top contributors this week</span>
-              <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', background: 'rgba(255,255,255,0.06)', padding: '4px 10px', borderRadius: '100px' }}>Mar 2026</span>
+              <span style={{ fontSize: '15px', fontWeight: 700, color: 'white' }}>Top contributors</span>
+              <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', background: 'rgba(255,255,255,0.06)', padding: '4px 10px', borderRadius: '100px' }}>Live</span>
             </div>
-            {leaders.map((r, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '11px 0', borderBottom: i < 4 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
-                <span style={{ fontSize: '12px', fontWeight: 800, color: r.rankColor, width: '18px', textAlign: 'center', flexShrink: 0 }}>{r.rank}</span>
-                <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(91,163,232,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>{r.avi}</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: 'white' }}>{r.user}</div>
-                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', marginTop: '2px' }}>{r.detail}</div>
-                </div>
-                <span style={{ fontSize: '14px', fontWeight: 700, color: '#6AAEE8' }}>{r.pts}</span>
-                <span style={{ fontSize: '15px' }}>{r.badge}</span>
+            {leaderboard.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '32px 0', color: 'rgba(255,255,255,0.3)', fontSize: '14px' }}>
+                Be the first to earn points 🏆
               </div>
-            ))}
+            ) : (
+              leaderboard.map((r, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '11px 0', borderBottom: i < leaderboard.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 800, color: rankColors[i] ?? 'rgba(255,255,255,0.25)', width: '18px', textAlign: 'center', flexShrink: 0 }}>
+                    {i < 3 ? rankEmojis[i] : i + 1}
+                  </span>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(91,163,232,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>
+                    {avis[i % avis.length]}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'white' }}>{r.username}</div>
+                  </div>
+                  <span style={{ fontSize: '14px', fontWeight: 700, color: '#6AAEE8' }}>{r.points} pts</span>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
- 
+
       {/* STORY */}
       <div style={{ background: 'white', padding: '100px 48px' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '100px', alignItems: 'center' }}>
@@ -229,10 +262,10 @@ export default function App() {
             background: 'linear-gradient(145deg,#1A5FAA,#3B8FD4)', borderRadius: '28px', height: '440px',
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>&#x1F54C;</div>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🕌</div>
             <div style={{ fontWeight: 800, fontSize: '36px', color: 'white', letterSpacing: '3px' }}>FASSAH</div>
             <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)', marginTop: '8px', fontStyle: 'italic' }}>
-              &#x641;&#x64E;&#x633;&#x64E;&#x627;&#x62D; — spaciousness & ease
+              فَسَاح — spaciousness & ease
             </div>
           </div>
           <div>
@@ -250,7 +283,7 @@ export default function App() {
               The word fassah comes from the Arabic for spaciousness, openness, ease. That is what we want every Muslim to feel when prayer time comes — not panic, but peace.
             </p>
             <div style={{ background: bluePale, borderRadius: '14px', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <div style={{ width: '42px', height: '42px', background: blue, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>&#x1F54C;</div>
+              <div style={{ width: '42px', height: '42px', background: blue, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>🕌</div>
               <div style={{ fontSize: '13px', color: textMid, lineHeight: 1.5 }}>
                 <strong style={{ color: blueDark }}>Built for the ummah, by the ummah.</strong> Fassah is not owned by a corporation. Every spot on this map was added by a Muslim who wanted to help.
               </div>
@@ -258,7 +291,7 @@ export default function App() {
           </div>
         </div>
       </div>
- 
+
       {/* FOOTER */}
       <footer style={{ background: '#0C1B2E', padding: '56px 48px 40px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '48px', gap: '40px', flexWrap: 'wrap' }}>
@@ -282,14 +315,14 @@ export default function App() {
           ))}
         </div>
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', color: 'rgba(255,255,255,0.25)', flexWrap: 'wrap', gap: '12px' }}>
-          <span>&#169; 2026 Fassah · Built for the ummah · UK</span>
-          <span style={{ fontSize: '16px', color: 'rgba(255,255,255,0.15)', letterSpacing: '2px' }}>&#x628;&#x650;&#x633;&#x652;&#x645;&#x650; &#x627;&#x644;&#x644;&#x647;&#x650;</span>
+          <span>© 2026 Fassah · Built for the ummah · UK</span>
+          <span style={{ fontSize: '16px', color: 'rgba(255,255,255,0.15)', letterSpacing: '2px' }}>بِسْمِ اللهِ</span>
           <span>Free to use · Always</span>
         </div>
       </footer>
- 
+
       {selectedSpace && (
-        <SpacePopup space={selectedSpace} onClose={() => setSelectedSpace(null)} onCheckIn={handleCheckIn} />
+        <SpacePopup space={selectedSpace} onClose={() => setSelectedSpace(null)} />
       )}
       {showSubmitForm && (
         <SubmitSpaceForm onClose={() => setShowSubmitForm(false)} onSuccess={() => { loadSpaces(); }} />
@@ -297,4 +330,3 @@ export default function App() {
     </div>
   );
 }
- 
