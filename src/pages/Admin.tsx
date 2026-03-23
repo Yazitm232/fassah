@@ -121,9 +121,9 @@ export default function Admin() {
                     href={`https://www.google.com/maps?q=${space.latitude},${space.longitude}`}
                     target="_blank" rel="noopener noreferrer"
                     style={{ padding: '9px 18px', borderRadius: '10px', border: '1.5px solid #e5e7eb', color: '#555', fontSize: '13px', fontWeight: 600, textDecoration: 'none' }}
-                  >
-                    🗺️ View on Maps
-                  </a>
+>
+  View on Maps
+</a>
                   <button onClick={() => approve(space.id)} style={{
                     padding: '9px 24px', borderRadius: '10px', border: 'none',
                     background: '#22C55E', color: 'white', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
