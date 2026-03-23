@@ -1,240 +1,205 @@
-import { useState } from 'react';
-import { Space } from '../lib/supabase';
+import React, { useState, useEffect } from 'react';
+import { Space, checkInToSpace, fetchRecentCheckins, getOrCreateSession, addPoints } from '../lib/supabase';
 
 interface SpacePopupProps {
   space: Space;
   onClose: () => void;
-  onCheckIn: (spaceId: string) => void;
 }
 
-function getTypeBadgeStyle(type: string) {
-  switch (type) {
-    case 'Outdoor Space': return { background: '#DCFCE7', color: '#166534' };
-    case 'Multi-faith Room': return { background: '#DBEAFE', color: '#1E40AF' };
-    case 'Friendly Business': return { background: '#EDE9FE', color: '#6B21A8' };
-    case 'Community Home': return { background: '#FEF3C7', color: '#92400E' };
-    case 'Mosque': return { background: '#E0F2FE', color: '#075985' };
-    default: return { background: '#F3F4F6', color: '#374151' };
-  }
-}
+const SpacePopup: React.FC<SpacePopupProps> = ({ space, onClose }) => {
+  const [stage, setStage] = useState<'idle' | 'questions' | 'done'>('idle');
+  const [answers, setAnswers] = useState<{ is_open: boolean | null; is_busy: boolean | null; wudu_available: boolean | null }>({
+    is_open: null, is_busy: null, wudu_available: null,
+  });
+  const [checkinSummary, setCheckinSummary] = useState<string>('');
+  const [sessionId, setSessionId] = useState<string>('');
+  const [earnedPoints, setEarnedPoints] = useState(0);
 
-function getTypeEmoji(type: string): string {
-  switch (type) {
-    case 'Outdoor Space': return '🌿';
-    case 'Multi-faith Room': return '🏢';
-    case 'Friendly Business': return '🏪';
-    case 'Community Home': return '🏠';
-    case 'Mosque': return '🕌';
-    default: return '📍';
-  }
-}
+  useEffect(() => {
+    getOrCreateSession().then(s => setSessionId(s.sessionId));
+    fetchRecentCheckins(space.id).then(data => {
+      if (data.length === 0) return;
+      const recent = data.slice(0, 5);
+      const openCount = recent.filter(c => c.is_open).length;
+      const busyCount = recent.filter(c => c.is_busy).length;
+      const wuduCount = recent.filter(c => c.wudu_available).length;
+      const parts: string[] = [];
+      if (openCount >= Math.ceil(recent.length / 2)) parts.push('Usually open');
+      if (busyCount >= Math.ceil(recent.length / 2)) parts.push('can be busy');
+      else parts.push('usually quiet');
+      if (wuduCount >= Math.ceil(recent.length / 2)) parts.push('wudu available');
+      setCheckinSummary(parts.join(' · '));
+    });
+  }, [space.id]);
 
-function getDaysAgo(dateString: string | null): string {
-  if (!dateString) return 'Not yet visited';
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMins = Math.floor((now.getTime() - date.getTime()) / 60000);
-  if (diffMins < 60) return `${diffMins} minutes ago`;
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours} hours ago`;
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays === 1) return 'Yesterday';
-  return `${diffDays} days ago`;
-}
-
-type CheckInStep = 'idle' | 'questions' | 'done';
-
-export default function SpacePopup({ space, onClose, onCheckIn }: SpacePopupProps) {
-  const [step, setStep] = useState<CheckInStep>('idle');
-  const [isOpen, setIsOpen] = useState<boolean | null>(null);
-  const [isBusy, setIsBusy] = useState<boolean | null>(null);
-  const [wuduAvailable, setWuduAvailable] = useState<boolean | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const blue = '#2B7FD4';
-  const blueDark = '#1A5FAA';
-  const bluePale = '#EBF4FF';
-  const badgeStyle = getTypeBadgeStyle(space.type);
-
-  const handleDirections = () => {
-    window.open(`https://www.google.com/maps/dir/?api=1&destination=${space.latitude},${space.longitude}`, '_blank');
+  const handleCheckinSubmit = async () => {
+    if (answers.is_open === null || answers.is_busy === null || answers.wudu_available === null) return;
+    const success = await checkInToSpace(space.id, sessionId, {
+      is_open: answers.is_open,
+      is_busy: answers.is_busy,
+      wudu_available: answers.wudu_available,
+    });
+    if (success) {
+      await addPoints(sessionId, 2);
+      setEarnedPoints(2);
+      setStage('done');
+      setTimeout(onClose, 2500);
+    }
   };
 
-  const handleStartCheckIn = () => {
-    setStep('questions');
+  const formatLastCheckin = (ts?: string) => {
+    if (!ts) return 'No check-ins yet';
+    const diff = Math.floor((Date.now() - new Date(ts).getTime()) / 60000);
+    if (diff < 1) return 'Just now';
+    if (diff < 60) return `${diff}m ago`;
+    if (diff < 1440) return `${Math.floor(diff / 60)}h ago`;
+    return `${Math.floor(diff / 1440)}d ago`;
   };
-
-  const handleSubmitCheckIn = async () => {
-    setIsSubmitting(true);
-    await onCheckIn(space.id);
-    setIsSubmitting(false);
-    setStep('done');
-    setTimeout(() => onClose(), 2500);
-  };
-
-  const allAnswered = isOpen !== null && isBusy !== null && wuduAvailable !== null;
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      zIndex: 50, padding: '16px',
-    }}>
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+      zIndex: 1000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+    }} onClick={onClose}>
       <div style={{
-        background: 'white', borderRadius: '20px',
-        boxShadow: '0 24px 80px rgba(0,0,0,0.2)',
-        maxWidth: '520px', width: '100%',
-        maxHeight: '90vh', overflowY: 'auto',
-        position: 'relative',
-      }}>
+        background: '#fff', borderRadius: '20px 20px 0 0', width: '100%',
+        maxWidth: 480, padding: '24px', paddingBottom: '32px',
+        maxHeight: '85vh', overflowY: 'auto',
+      }} onClick={e => e.stopPropagation()}>
 
-        {/* DONE SCREEN */}
-        {step === 'done' && (
-          <div style={{
-            position: 'absolute', inset: 0, background: 'white',
-            display: 'flex', flexDirection: 'column', alignItems: 'center',
-            justifyContent: 'center', borderRadius: '20px', zIndex: 10, padding: '32px',
-            textAlign: 'center',
-          }}>
-            <div style={{ fontSize: '56px', marginBottom: '16px' }}>✅</div>
-            <div style={{ fontSize: '22px', fontWeight: 800, color: '#0C1B2E', marginBottom: '8px' }}>Checked in!</div>
-            <div style={{ fontSize: '15px', color: '#3D5A7A', marginBottom: '4px' }}>+2 points earned</div>
-            <div style={{ fontSize: '13px', color: '#7A9BBF' }}>JazakAllah khayran — you just helped the next person 🤲</div>
-          </div>
-        )}
-
-        {/* PHOTO */}
-        {space.photo_url && (
-          <div style={{ height: '200px', overflow: 'hidden', borderRadius: '20px 20px 0 0' }}>
-            <img src={space.photo_url} alt={space.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          </div>
-        )}
-
-        <div style={{ padding: '24px' }}>
-          {/* HEADER */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <div style={{ flex: 1 }}>
-              <span style={{ ...badgeStyle, fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '100px', display: 'inline-block', marginBottom: '8px' }}>
-                {getTypeEmoji(space.type)} {space.type}
-              </span>
-              <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#0C1B2E', margin: 0 }}>{space.name}</h2>
-            </div>
-            <button onClick={onClose} style={{ background: '#F6FAFE', border: 'none', borderRadius: '50%', width: '36px', height: '36px', cursor: 'pointer', fontSize: '16px', color: '#7A9BBF', flexShrink: 0, marginLeft: '12px' }}>✕</button>
-          </div>
-
-          {/* DETAILS */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
-            <Row icon="📍" label="Address" value={space.address} />
-            {space.description && <Row icon="💬" label="What to expect" value={space.description} />}
-            {space.best_times && <Row icon="🕐" label="Best times" value={space.best_times} />}
-            {space.qibla_notes && <Row icon="🧭" label="Qibla" value={space.qibla_notes} />}
-            <Row icon="✅" label="Last visited" value={getDaysAgo(space.last_checkin)} />
-          </div>
-
-          {/* CHECKIN QUESTIONS */}
-          {step === 'questions' && (
-            <div style={{ background: bluePale, borderRadius: '14px', padding: '18px', marginBottom: '16px' }}>
-              <div style={{ fontSize: '13px', fontWeight: 700, color: blueDark, marginBottom: '14px' }}>
-                Quick check — helps the next person 🤲
+        {stage === 'idle' && (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+              <div>
+                <span style={{
+                  background: '#EFF6FF', color: '#1255A0', fontSize: 11,
+                  fontWeight: 600, padding: '3px 8px', borderRadius: 20, textTransform: 'uppercase',
+                }}>{space.type}</span>
+                <h2 style={{ margin: '8px 0 4px', fontSize: 20, fontWeight: 700, color: '#111' }}>{space.name}</h2>
+                <p style={{ margin: 0, color: '#666', fontSize: 14 }}>{space.address}</p>
               </div>
-
-              <Question
-                q="Is the space currently open?"
-                value={isOpen}
-                onChange={setIsOpen}
-                yes="Yes, open" no="Closed"
-                blue={blue}
-              />
-              <Question
-                q="How busy is it?"
-                value={isBusy}
-                onChange={setIsBusy}
-                yes="Busy" no="Quiet"
-                blue={blue}
-              />
-              <Question
-                q="Is wudu available?"
-                value={wuduAvailable}
-                onChange={setWuduAvailable}
-                yes="Yes" no="No"
-                blue={blue}
-              />
-
-              {allAnswered && (
-                <button onClick={handleSubmitCheckIn} disabled={isSubmitting} style={{
-                  width: '100%', background: blue, color: 'white', border: 'none',
-                  padding: '12px', borderRadius: '10px', fontSize: '14px', fontWeight: 700,
-                  cursor: 'pointer', fontFamily: 'system-ui', marginTop: '8px',
-                }}>
-                  {isSubmitting ? 'Submitting...' : 'Submit check-in (+2 pts)'}
-                </button>
-              )}
+              <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#999' }}>✕</button>
             </div>
-          )}
 
-          {/* BUTTONS */}
-          {step === 'idle' && (
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button onClick={handleDirections} style={{
-                flex: 1, background: blue, color: 'white', border: 'none',
-                padding: '13px', borderRadius: '12px', fontSize: '14px', fontWeight: 700,
-                cursor: 'pointer', fontFamily: 'system-ui',
-              }}>🗺️ Get Directions</button>
-              <button onClick={handleStartCheckIn} style={{
-                flex: 1, background: bluePale, color: blue,
-                border: `2px solid #C4DEFA`, padding: '13px', borderRadius: '12px',
-                fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: 'system-ui',
-              }}>✓ Check In</button>
-            </div>
-          )}
+            {space.photo_url && (
+              <img src={space.photo_url} alt={space.name} style={{
+                width: '100%', height: 160, objectFit: 'cover', borderRadius: 12, marginBottom: 12,
+              }} />
+            )}
 
-          {step === 'idle' && (
-            <div style={{ textAlign: 'center', fontSize: '11px', color: '#7A9BBF', marginTop: '10px' }}>
-              Check in earns 2 points and helps others know this space is active 🤲
+            {checkinSummary && (
+              <div style={{
+                background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 10,
+                padding: '8px 12px', marginBottom: 12, fontSize: 13, color: '#166534',
+              }}>
+                📊 {checkinSummary}
+              </div>
+            )}
+
+            <p style={{ fontSize: 14, color: '#444', lineHeight: 1.6, marginBottom: 12 }}>{space.description}</p>
+
+            {space.best_times && (
+              <div style={{ marginBottom: 8 }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>🕐 Best times: </span>
+                <span style={{ fontSize: 13, color: '#666' }}>{space.best_times}</span>
+              </div>
+            )}
+            {space.qibla_notes && (
+              <div style={{ marginBottom: 8 }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>🧭 Qibla: </span>
+                <span style={{ fontSize: 13, color: '#666' }}>{space.qibla_notes}</span>
+              </div>
+            )}
+
+            <div style={{ fontSize: 12, color: '#999', marginBottom: 20 }}>
+              Last check-in: {formatLastCheckin(space.last_checkin)}
             </div>
-          )}
-        </div>
+
+            <div style={{ display: 'flex', gap: 10 }}>
+              
+                href={`https://www.google.com/maps/dir/?api=1&destination=${space.latitude},${space.longitude}`}
+                target="_blank" rel="noopener noreferrer"
+                style={{
+                  flex: 1, padding: '12px', borderRadius: 12, border: '2px solid #1255A0',
+                  color: '#1255A0', fontWeight: 600, fontSize: 14, textAlign: 'center',
+                  textDecoration: 'none', display: 'block',
+                }}
+              >
+                Get Directions
+              </a>
+              <button onClick={() => setStage('questions')} style={{
+                flex: 1, padding: '12px', borderRadius: 12,
+                background: 'linear-gradient(135deg, #1255A0, #2B7FD4)',
+                color: '#fff', fontWeight: 600, fontSize: 14, border: 'none', cursor: 'pointer',
+              }}>
+                ✓ Check In (+2 pts)
+              </button>
+            </div>
+          </>
+        )}
+
+        {stage === 'questions' && (
+          <>
+            <h3 style={{ margin: '0 0 6px', fontSize: 18, fontWeight: 700 }}>Quick check-in</h3>
+            <p style={{ margin: '0 0 20px', fontSize: 13, color: '#666' }}>Help the community with 3 quick questions</p>
+
+            {[
+              { key: 'is_open', question: 'Is the space currently open / accessible?' },
+              { key: 'is_busy', question: 'Is it busy right now?' },
+              { key: 'wudu_available', question: 'Is wudu (washing) facility available?' },
+            ].map(({ key, question }) => (
+              <div key={key} style={{ marginBottom: 16 }}>
+                <p style={{ margin: '0 0 8px', fontSize: 14, fontWeight: 600, color: '#333' }}>{question}</p>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {[{ label: 'Yes', value: true }, { label: 'No', value: false }].map(({ label, value }) => {
+                    const current = answers[key as keyof typeof answers];
+                    const active = current === value;
+                    return (
+                      <button key={label} onClick={() => setAnswers(prev => ({ ...prev, [key]: value }))} style={{
+                        flex: 1, padding: '10px', borderRadius: 10, fontSize: 14, fontWeight: 600,
+                        border: active ? '2px solid #1255A0' : '2px solid #e5e7eb',
+                        background: active ? '#EFF6FF' : '#fff',
+                        color: active ? '#1255A0' : '#666', cursor: 'pointer',
+                      }}>{label}</button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+
+            <button
+              onClick={handleCheckinSubmit}
+              disabled={answers.is_open === null || answers.is_busy === null || answers.wudu_available === null}
+              style={{
+                width: '100%', padding: '14px', borderRadius: 12, marginTop: 8,
+                background: answers.is_open !== null && answers.is_busy !== null && answers.wudu_available !== null
+                  ? 'linear-gradient(135deg, #1255A0, #2B7FD4)' : '#e5e7eb',
+                color: answers.is_open !== null && answers.is_busy !== null && answers.wudu_available !== null
+                  ? '#fff' : '#999',
+                fontWeight: 700, fontSize: 15, border: 'none', cursor: 'pointer',
+              }}
+            >
+              Submit Check-In
+            </button>
+          </>
+        )}
+
+        {stage === 'done' && (
+          <div style={{ textAlign: 'center', padding: '32px 0' }}>
+            <div style={{ fontSize: 56, marginBottom: 12 }}>🕌</div>
+            <h3 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 8px', color: '#111' }}>JazakAllah Khayran</h3>
+            <p style={{ color: '#666', fontSize: 15, margin: '0 0 16px' }}>Your check-in helps the community</p>
+            <div style={{
+              display: 'inline-block', background: 'linear-gradient(135deg, #1255A0, #2B7FD4)',
+              color: '#fff', padding: '10px 24px', borderRadius: 20, fontWeight: 700, fontSize: 16,
+            }}>
+              +{earnedPoints} points earned ✨
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
-}
+};
 
-function Row({ icon, label, value }: { icon: string; label: string; value: string }) {
-  return (
-    <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-      <span style={{ fontSize: '15px', marginTop: '2px' }}>{icon}</span>
-      <div>
-        <div style={{ fontSize: '10px', color: '#7A9BBF', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '2px' }}>{label}</div>
-        <div style={{ fontSize: '14px', color: '#0C1B2E', lineHeight: 1.5 }}>{value}</div>
-      </div>
-    </div>
-  );
-}
-
-function Question({ q, value, onChange, yes, no, blue }: {
-  q: string; value: boolean | null;
-  onChange: (v: boolean) => void;
-  yes: string; no: string; blue: string;
-}) {
-  return (
-    <div style={{ marginBottom: '12px' }}>
-      <div style={{ fontSize: '13px', color: '#0C1B2E', fontWeight: 500, marginBottom: '8px' }}>{q}</div>
-      <div style={{ display: 'flex', gap: '8px' }}>
-        <button type="button" onClick={() => onChange(true)} style={{
-          flex: 1, padding: '8px', borderRadius: '8px', fontSize: '12px', fontWeight: 600,
-          border: `1.5px solid ${value === true ? blue : '#D4E6F5'}`,
-          background: value === true ? blue : 'white',
-          color: value === true ? 'white' : '#3D5A7A',
-          cursor: 'pointer', fontFamily: 'system-ui',
-        }}>{yes}</button>
-        <button type="button" onClick={() => onChange(false)} style={{
-          flex: 1, padding: '8px', borderRadius: '8px', fontSize: '12px', fontWeight: 600,
-          border: `1.5px solid ${value === false ? '#EF4444' : '#D4E6F5'}`,
-          background: value === false ? '#FEE2E2' : 'white',
-          color: value === false ? '#991B1B' : '#3D5A7A',
-          cursor: 'pointer', fontFamily: 'system-ui',
-        }}>{no}</button>
-      </div>
-    </div>
-  );
-}
+export default SpacePopup;
