@@ -1,12 +1,6 @@
 import { useState, useRef } from 'react';
-import { submitSpace } from '../lib/supabase';
+import { submitSpace, supabase } from '../lib/supabase';
 import { useGoogleMaps } from '../hooks/useGoogleMaps';
-import { createClient } from '@supabase/supabase-js';
- 
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
  
 interface SubmitSpaceFormProps {
   onClose: () => void;
@@ -15,7 +9,6 @@ interface SubmitSpaceFormProps {
  
 const LOCATION_TYPES = ['Outdoor Space','Multi-faith Room','Friendly Business','Community Home','Mosque','Other'];
  
-// ── VALIDATION RULES (OWASP aligned) ──────────────────────────
 const RULES = {
   name:        { min: 3,  max: 100, label: 'Location name' },
   address:     { min: 5,  max: 200, label: 'Address' },
@@ -24,18 +17,14 @@ const RULES = {
   qibla_notes: { min: 0,  max: 200, label: 'Qibla notes' },
 };
  
-// Strip HTML tags and dangerous characters
 function sanitize(input: string): string {
   return input
-    .replace(/<[^>]*>/g, '')           // strip HTML tags
-    .replace(/javascript:/gi, '')       // strip JS protocol
-    .replace(/on\w+\s*=/gi, '')         // strip event handlers
-    .replace(/[<>'"]/g, (c) => ({      // encode special chars
-      '<': '&lt;', '>': '&gt;',
-      "'": '&#39;', '"': '&quot;',
-    }[c] || c))
+    .replace(/<[^>]*>/g, '')
+    .replace(/javascript:/gi, '')
+    .replace(/on\w+\s*=/gi, '')
+    .replace(/[<>'"]/g, (c) => ({'<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c] || c))
     .trim()
-    .slice(0, 1000);                    // hard cap
+    .slice(0, 1000);
 }
  
 function validate(field: keyof typeof RULES, value: string): string | null {
@@ -47,25 +36,22 @@ function validate(field: keyof typeof RULES, value: string): string | null {
   return null;
 }
  
-// Client-side rate limiting (5 submissions per hour per browser)
 const RATE_KEY = 'fassah_submit_times';
 const RATE_LIMIT = 5;
-const RATE_WINDOW = 60 * 60 * 1000; // 1 hour
+const RATE_WINDOW = 60 * 60 * 1000;
  
-function checkRateLimit(): { allowed: boolean; remaining: number } {
+function checkRateLimit(): { allowed: boolean } {
   try {
     const raw = sessionStorage.getItem(RATE_KEY);
     const times: number[] = raw ? JSON.parse(raw) : [];
     const now = Date.now();
     const recent = times.filter(t => now - t < RATE_WINDOW);
-    if (recent.length >= RATE_LIMIT) {
-      return { allowed: false, remaining: 0 };
-    }
+    if (recent.length >= RATE_LIMIT) return { allowed: false };
     recent.push(now);
     sessionStorage.setItem(RATE_KEY, JSON.stringify(recent));
-    return { allowed: true, remaining: RATE_LIMIT - recent.length };
+    return { allowed: true };
   } catch {
-    return { allowed: true, remaining: RATE_LIMIT };
+    return { allowed: true };
   }
 }
  
@@ -80,7 +66,7 @@ export default function SubmitSpaceForm({ onClose, onSuccess }: SubmitSpaceFormP
   const [formData, setFormData] = useState({
     name: '', address: '', type: LOCATION_TYPES[0],
     description: '', best_times: '', qibla_notes: '',
-    honeypot: '', // anti-bot field — must stay empty
+    honeypot: '',
   });
   const [globalError, setGlobalError] = useState('');
  
@@ -89,15 +75,12 @@ export default function SubmitSpaceForm({ onClose, onSuccess }: SubmitSpaceFormP
   const bluePale = '#EBF4FF';
  
   const handleChange = (field: string, value: string) => {
-    // Enforce max lengths client-side immediately
     const maxLengths: Record<string, number> = {
-      name: 100, address: 200, description: 1000,
-      best_times: 200, qibla_notes: 200,
+      name: 100, address: 200, description: 1000, best_times: 200, qibla_notes: 200,
     };
     const max = maxLengths[field];
     if (max && value.length > max) return;
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error on change
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
   };
  
@@ -115,9 +98,7 @@ export default function SubmitSpaceForm({ onClose, onSuccess }: SubmitSpaceFormP
       const err = validate('qibla_notes', formData.qibla_notes);
       if (err) newErrors.qibla_notes = err;
     }
-    if (!LOCATION_TYPES.includes(formData.type)) {
-      newErrors.type = 'Invalid location type';
-    }
+    if (!LOCATION_TYPES.includes(formData.type)) newErrors.type = 'Invalid location type';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -125,12 +106,10 @@ export default function SubmitSpaceForm({ onClose, onSuccess }: SubmitSpaceFormP
   const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    // Validate file type
     if (!['image/jpeg','image/png','image/webp'].includes(file.type)) {
       setGlobalError('Only JPG, PNG or WebP images are allowed');
       return;
     }
-    // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
       setGlobalError('Photo must be under 5MB');
       return;
@@ -143,7 +122,6 @@ export default function SubmitSpaceForm({ onClose, onSuccess }: SubmitSpaceFormP
   };
  
   const uploadPhoto = async (file: File): Promise<string | undefined> => {
-    // Generate a safe filename — no user-controlled path traversal
     const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
     const safeName = `${Date.now()}-${crypto.randomUUID()}.${ext}`;
     const { data, error } = await supabase.storage
@@ -157,21 +135,14 @@ export default function SubmitSpaceForm({ onClose, onSuccess }: SubmitSpaceFormP
     e.preventDefault();
     setGlobalError('');
  
-    // Anti-bot honeypot check
-    if (formData.honeypot) {
-      // Silently fail — don't tell bots they were caught
-      setSubmitted(true);
-      return;
-    }
+    if (formData.honeypot) { setSubmitted(true); return; }
  
-    // Client-side rate limit
     const { allowed } = checkRateLimit();
     if (!allowed) {
       setGlobalError('You have submitted too many spaces recently. Please try again in an hour.');
       return;
     }
  
-    // Validate all fields
     if (!validateAll()) return;
  
     setIsSubmitting(true);
@@ -183,7 +154,6 @@ export default function SubmitSpaceForm({ onClose, onSuccess }: SubmitSpaceFormP
     }
  
     try {
-      // Geocode address
       const geocoder = new google.maps.Geocoder();
       const result = await new Promise<google.maps.GeocoderResult>((resolve, reject) => {
         geocoder.geocode({ address: sanitize(formData.address) + ', UK' }, (results, status) => {
@@ -192,22 +162,16 @@ export default function SubmitSpaceForm({ onClose, onSuccess }: SubmitSpaceFormP
         });
       });
  
-      const loc = result.geometry.location;
+      const lat = result.geometry.location.lat();
+      const lng = result.geometry.location.lng();
  
-      // Validate coordinates are within UK bounds
-      const lat = loc.lat();
-      const lng = loc.lng();
       if (lat < 49.0 || lat > 61.0 || lng < -8.0 || lng > 2.0) {
         throw new Error('Address must be within the UK.');
       }
  
-      // Upload photo if provided
       let photo_url: string | undefined;
-      if (photoFile) {
-        photo_url = await uploadPhoto(photoFile);
-      }
+      if (photoFile) photo_url = await uploadPhoto(photoFile);
  
-      // Submit with sanitized data
       const success = await submitSpace({
         name: sanitize(formData.name),
         address: sanitize(formData.address),
@@ -256,7 +220,6 @@ export default function SubmitSpaceForm({ onClose, onSuccess }: SubmitSpaceFormP
     <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.55)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:50, padding:'16px', overflowY:'auto' }}>
       <div style={{ background:'white', borderRadius:'20px', boxShadow:'0 24px 80px rgba(0,0,0,0.2)', maxWidth:'560px', width:'100%', margin:'20px 0' }}>
  
-        {/* Header */}
         <div style={{ background:`linear-gradient(135deg,${blueDark},${blue})`, padding:'24px', borderRadius:'20px 20px 0 0', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
           <div>
             <div style={{ fontSize:'20px', fontWeight:800, color:'white' }}>Add a Prayer Space</div>
@@ -267,13 +230,10 @@ export default function SubmitSpaceForm({ onClose, onSuccess }: SubmitSpaceFormP
  
         <form onSubmit={handleSubmit} style={{ padding:'24px', display:'flex', flexDirection:'column', gap:'16px' }}>
  
-          {/* Honeypot — hidden from real users, catches bots */}
           <div style={{ display:'none' }} aria-hidden="true">
-            <input
-              type="text" tabIndex={-1} autoComplete="off"
+            <input type="text" tabIndex={-1} autoComplete="off"
               value={formData.honeypot}
-              onChange={e => setFormData(prev => ({ ...prev, honeypot: e.target.value }))}
-            />
+              onChange={e => setFormData(prev => ({ ...prev, honeypot: e.target.value }))} />
           </div>
  
           {globalError && (
@@ -282,7 +242,6 @@ export default function SubmitSpaceForm({ onClose, onSuccess }: SubmitSpaceFormP
             </div>
           )}
  
-          {/* Name */}
           <div>
             <label style={{ display:'block', fontSize:'13px', fontWeight:600, color:'#0C1B2E', marginBottom:'6px' }}>
               Location Name * <span style={{ color:'#7A9BBF', fontWeight:400 }}>(3-100 characters)</span>
@@ -294,7 +253,6 @@ export default function SubmitSpaceForm({ onClose, onSuccess }: SubmitSpaceFormP
             {errors.name && <div style={{ fontSize:'12px', color:'#EF4444', marginTop:'4px' }}>{errors.name}</div>}
           </div>
  
-          {/* Address */}
           <div>
             <label style={{ display:'block', fontSize:'13px', fontWeight:600, color:'#0C1B2E', marginBottom:'6px' }}>
               UK Address or Postcode * <span style={{ color:'#7A9BBF', fontWeight:400 }}>(UK only)</span>
@@ -306,7 +264,6 @@ export default function SubmitSpaceForm({ onClose, onSuccess }: SubmitSpaceFormP
             {errors.address && <div style={{ fontSize:'12px', color:'#EF4444', marginTop:'4px' }}>{errors.address}</div>}
           </div>
  
-          {/* Type */}
           <div>
             <label style={{ display:'block', fontSize:'13px', fontWeight:600, color:'#0C1B2E', marginBottom:'6px' }}>Space Type *</label>
             <select required value={formData.type}
@@ -317,7 +274,6 @@ export default function SubmitSpaceForm({ onClose, onSuccess }: SubmitSpaceFormP
             {errors.type && <div style={{ fontSize:'12px', color:'#EF4444', marginTop:'4px' }}>{errors.type}</div>}
           </div>
  
-          {/* Description */}
           <div>
             <label style={{ display:'block', fontSize:'13px', fontWeight:600, color:'#0C1B2E', marginBottom:'6px' }}>
               Description * <span style={{ color:'#7A9BBF', fontWeight:400 }}>(10-1000 characters)</span>
@@ -332,7 +288,6 @@ export default function SubmitSpaceForm({ onClose, onSuccess }: SubmitSpaceFormP
             {errors.description && <div style={{ fontSize:'12px', color:'#EF4444', marginTop:'4px' }}>{errors.description}</div>}
           </div>
  
-          {/* Best times */}
           <div>
             <label style={{ display:'block', fontSize:'13px', fontWeight:600, color:'#0C1B2E', marginBottom:'6px' }}>Best Times to Visit</label>
             <input type="text" value={formData.best_times}
@@ -342,7 +297,6 @@ export default function SubmitSpaceForm({ onClose, onSuccess }: SubmitSpaceFormP
             {errors.best_times && <div style={{ fontSize:'12px', color:'#EF4444', marginTop:'4px' }}>{errors.best_times}</div>}
           </div>
  
-          {/* Qibla */}
           <div>
             <label style={{ display:'block', fontSize:'13px', fontWeight:600, color:'#0C1B2E', marginBottom:'6px' }}>Qibla Notes 🧭</label>
             <input type="text" value={formData.qibla_notes}
@@ -352,7 +306,6 @@ export default function SubmitSpaceForm({ onClose, onSuccess }: SubmitSpaceFormP
             {errors.qibla_notes && <div style={{ fontSize:'12px', color:'#EF4444', marginTop:'4px' }}>{errors.qibla_notes}</div>}
           </div>
  
-          {/* Photo */}
           <div>
             <label style={{ display:'block', fontSize:'13px', fontWeight:600, color:'#0C1B2E', marginBottom:'6px' }}>
               Photo <span style={{ color:'#7A9BBF', fontWeight:400 }}>(JPG/PNG/WebP, max 5MB)</span>
@@ -374,12 +327,10 @@ export default function SubmitSpaceForm({ onClose, onSuccess }: SubmitSpaceFormP
             <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handlePhoto} style={{ display:'none' }} />
           </div>
  
-          {/* Info */}
           <div style={{ background:bluePale, border:`1px solid #C4DEFA`, borderRadius:'10px', padding:'14px 16px', fontSize:'13px', color:'#3D5A7A' }}>
             🔍 All submissions are reviewed before going live. Once verified you earn <strong>10 points</strong>. Max 5 submissions per hour.
           </div>
  
-          {/* Buttons */}
           <div style={{ display:'flex', gap:'10px' }}>
             <button type="button" onClick={onClose}
               style={{ flex:1, background:'#F6FAFE', color:'#3D5A7A', border:'1.5px solid #D4E6F5', padding:'13px', borderRadius:'12px', fontSize:'14px', fontWeight:700, cursor:'pointer', fontFamily:'inherit' }}>
