@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import MapView from './components/MapView';
 import SpacePopup from './components/SpacePopup';
 import SubmitSpaceForm from './components/SubmitSpaceForm';
-import BottomNav from './components/BottomNav';
-import PrayerTimes from './pages/PrayerTimes';
-import Leaderboard from './pages/Leaderboard';
-import Settings from './pages/Settings';
+import BottomNav from './BottomNav';
+import PrayerTimes from './PrayerTimes';
+import Leaderboard from './Leaderboard';
+import Settings from './Settings';
 import { fetchVerifiedSpaces, Space } from './lib/supabase';
  
 export default function App() {
