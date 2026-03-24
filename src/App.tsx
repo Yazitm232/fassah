@@ -28,154 +28,20 @@ function BottomNav({ activePage, onNavigate }: { activePage: string; onNavigate:
   );
 }
  
-// ─── LIVE QIBLA COMPASS ───────────────────────────────────────
-function QiblaCompass() {
-  const [heading, setHeading] = useState<number | null>(null);
-  const [permission, setPermission] = useState<'unknown'|'granted'|'denied'|'unavailable'>('unknown');
-  const QIBLA = 119;
-  const blue = '#1255A0';
-  const bluePale = '#EBF4FF';
- 
-  const handleOrientation = (e: DeviceOrientationEvent & { webkitCompassHeading?: number }) => {
-    let h: number | null = null;
-    if (e.webkitCompassHeading !== undefined && e.webkitCompassHeading !== null) {
-      h = e.webkitCompassHeading;
-    } else if (e.alpha !== null && e.alpha !== undefined) {
-      h = 360 - e.alpha;
-    }
-    if (h !== null) setHeading(h);
-  };
- 
-  const startListening = () => {
-    window.addEventListener('deviceorientationabsolute', handleOrientation as EventListener, true);
-    window.addEventListener('deviceorientation', handleOrientation as EventListener, true);
-  };
- 
-  useEffect(() => {
-    return () => {
-      window.removeEventListener('deviceorientationabsolute', handleOrientation as EventListener, true);
-      window.removeEventListener('deviceorientation', handleOrientation as EventListener, true);
-    };
-  }, []);
- 
-  const requestPermission = async () => {
-    if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
-      try {
-        const res = await (DeviceOrientationEvent as any).requestPermission();
-        if (res === 'granted') { setPermission('granted'); startListening(); }
-        else setPermission('denied');
-      } catch { setPermission('denied'); }
-    } else if (window.DeviceOrientationEvent) {
-      setPermission('granted');
-      startListening();
-    } else {
-      setPermission('unavailable');
-    }
-  };
- 
-  const needleRot = heading !== null ? QIBLA - heading : 0;
-  const normalised = ((needleRot % 360) + 360) % 360;
- 
-  return (
-    <div style={{ background:'white', borderRadius:16, padding:'20px', boxShadow:'0 2px 16px rgba(18,85,160,0.07)', marginBottom:24 }}>
-      <div style={{ fontSize:13, fontWeight:700, color:blue, marginBottom:4, textTransform:'uppercase' as const, letterSpacing:'1px' }}>🧭 Live Qibla Compass</div>
-      <div style={{ fontSize:12, color:'#999', marginBottom:16 }}>Hold phone flat — arrow points to Makkah</div>
- 
-      {permission === 'unknown' && (
-        <div style={{ textAlign:'center' as const, paddingBottom:8 }}>
-          <div style={{ fontSize:48, marginBottom:12 }}>🕋</div>
-          <div style={{ fontSize:14, color:'#555', marginBottom:16, lineHeight:1.5 }}>
-            Activate the live Qibla compass.<br/>
-            <span style={{ fontSize:12, color:'#AAA' }}>Uses your phone compass · no location stored.</span>
-          </div>
-          <button onClick={requestPermission} style={{ padding:'12px 28px', borderRadius:12, background:`linear-gradient(135deg,${blue},#2B7FD4)`, color:'white', border:'none', fontSize:14, fontWeight:700, cursor:'pointer' }}>
-            Activate Compass
-          </button>
-        </div>
-      )}
- 
-      {permission === 'denied' && (
-        <div style={{ textAlign:'center' as const, color:'#999', fontSize:13, padding:'12px 0' }}>
-          Compass permission denied. Please allow motion access in your browser settings.<br/>
-          <strong>Static bearing: 119° South-East from London.</strong>
-        </div>
-      )}
- 
-      {permission === 'unavailable' && (
-        <div style={{ textAlign:'center' as const, color:'#999', fontSize:13, padding:'12px 0' }}>
-          Compass not available on this device.<br/>
-          <strong>Qibla is 119° South-East from London.</strong>
-        </div>
-      )}
- 
-      {permission === 'granted' && (
-        <div style={{ display:'flex', flexDirection:'column' as const, alignItems:'center' }}>
-          {/* Compass */}
-          <div style={{ position:'relative', width:200, height:200, marginBottom:16 }}>
-            {/* Outer ring */}
-            <div style={{ position:'absolute', inset:0, borderRadius:'50%', border:`3px solid ${bluePale}`, background:'#FAFCFF' }} />
-            {/* Tick marks */}
-            {Array.from({length:12}).map((_,i) => (
-              <div key={i} style={{
-                position:'absolute', left:'50%', top:'50%', width:2, height:i%3===0?12:6,
-                background: i%3===0 ? blue : '#DDE8F8',
-                transformOrigin:'bottom center',
-                transform:`translateX(-50%) translateY(-97px) rotate(${i*30}deg)`,
-              }} />
-            ))}
-            {/* Cardinal labels */}
-            {[{l:'N',d:0},{l:'E',d:90},{l:'S',d:180},{l:'W',d:270}].map(({l,d}) => (
-              <div key={l} style={{
-                position:'absolute', left:'50%', top:'50%',
-                fontSize:11, fontWeight:700,
-                color: l==='N' ? blue : '#BCC8D8',
-                transform:`rotate(${d}deg) translateY(-80px) rotate(-${d}deg) translate(-50%,-50%)`,
-              }}>{l}</div>
-            ))}
-            {/* Needle — rotates to point Qibla */}
-            <div style={{
-              position:'absolute', left:'50%', top:'50%',
-              transformOrigin:'50% 100%',
-              transform:`translateX(-50%) translateY(-100%) rotate(${needleRot}deg)`,
-              transition:'transform 0.15s ease-out',
-              display:'flex', flexDirection:'column' as const, alignItems:'center',
-            }}>
-              {/* Kaaba at tip */}
-              <div style={{ fontSize:22, lineHeight:1, marginBottom:2 }}>🕋</div>
-              {/* Arrow shaft */}
-              <div style={{ width:4, height:68, background:`linear-gradient(to bottom,${blue},#5B9FE8)`, borderRadius:'2px 2px 0 0' }} />
-            </div>
-            {/* Centre dot */}
-            <div style={{ position:'absolute', left:'50%', top:'50%', width:14, height:14, borderRadius:'50%', background:blue, transform:'translate(-50%,-50%)', zIndex:2, border:'2px solid white' }} />
-          </div>
- 
-          {heading !== null ? (
-            <div style={{ textAlign:'center' as const }}>
-              <div style={{ fontSize:32, fontWeight:800, color:blue }}>{Math.round(normalised)}°</div>
-              <div style={{ fontSize:14, color:'#555', marginTop:4 }}>
-                {normalised < 10 || normalised > 350 ? "You're facing Qibla! 🕋" : `Turn ${Math.round(normalised)}° to face Makkah`}
-              </div>
-              <div style={{ fontSize:11, color:'#AAA', marginTop:4 }}>Compass heading: {Math.round(heading)}°</div>
-            </div>
-          ) : (
-            <div style={{ fontSize:13, color:'#AAA', textAlign:'center' as const }}>Waiting for compass signal... move your phone slowly.</div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
- 
-// ─── PRAYER TIMES PAGE ────────────────────────────────────────
+// ─── PRAYER TIMES PAGE (with Qibla as hero) ───────────────────
 function PrayerTimes() {
   const [prayers, setPrayers] = useState<{name:string;time:string;arabic:string}[]>([]);
   const [nextIndex, setNextIndex] = useState(0);
   const [countdown, setCountdown] = useState('');
   const [hijriDate, setHijriDate] = useState('');
+  const [heading, setHeading] = useState<number | null>(null);
+  const [compassPermission, setCompassPermission] = useState<'unknown'|'granted'|'denied'|'unavailable'>('unknown');
+  const [showTimetable, setShowTimetable] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval>|null>(null);
-  const blue = '#1255A0';
-  const bluePale = '#EBF4FF';
  
+  const QIBLA = 119;
+ 
+  // ── Prayer times ──
   useEffect(() => {
     fetch('https://api.aladhan.com/v1/timingsByCity?city=London&country=GB&method=2')
       .then(r => r.json()).then(data => {
@@ -207,48 +73,261 @@ function PrayerTimes() {
       setNextIndex(ni);
       const [h,m] = prayers[ni].time.split(':').map(Number);
       let diff = h*60+m-cur; if(diff<0) diff+=24*60;
-      setCountdown(`${Math.floor(diff/60)>0?Math.floor(diff/60)+'h ':''}${diff%60}m ${59-now.getSeconds()}s`);
+      const hrs = Math.floor(diff/60);
+      const mins = diff%60;
+      const secs = 59-now.getSeconds();
+      setCountdown(`${hrs>0?hrs+'h ':''} ${mins}m ${secs < 10 ? '0'+secs : secs}s`);
     };
     tick();
     intervalRef.current = setInterval(tick, 1000);
     return () => { if(intervalRef.current) clearInterval(intervalRef.current); };
   }, [prayers]);
  
+  // ── Compass ──
+  const handleOrientation = (e: DeviceOrientationEvent & { webkitCompassHeading?: number }) => {
+    let h: number | null = null;
+    if (e.webkitCompassHeading !== undefined && e.webkitCompassHeading !== null) h = e.webkitCompassHeading;
+    else if (e.alpha !== null && e.alpha !== undefined) h = 360 - e.alpha;
+    if (h !== null) setHeading(h);
+  };
+ 
+  const startListening = () => {
+    window.addEventListener('deviceorientationabsolute', handleOrientation as EventListener, true);
+    window.addEventListener('deviceorientation', handleOrientation as EventListener, true);
+  };
+ 
+  useEffect(() => () => {
+    window.removeEventListener('deviceorientationabsolute', handleOrientation as EventListener, true);
+    window.removeEventListener('deviceorientation', handleOrientation as EventListener, true);
+  }, []);
+ 
+  const requestCompass = async () => {
+    if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+      try {
+        const res = await (DeviceOrientationEvent as any).requestPermission();
+        if (res === 'granted') { setCompassPermission('granted'); startListening(); }
+        else setCompassPermission('denied');
+      } catch { setCompassPermission('denied'); }
+    } else if (window.DeviceOrientationEvent) {
+      setCompassPermission('granted'); startListening();
+    } else {
+      setCompassPermission('unavailable');
+    }
+  };
+ 
+  const needleRot = heading !== null ? QIBLA - heading : 0;
+  const normalised = ((needleRot % 360) + 360) % 360;
+  const nextPrayer = prayers[nextIndex];
+  const followingPrayer = prayers[(nextIndex + 1) % prayers.length];
+ 
+  // Gold colour palette
+  const gold = '#C9A84C';
+  const goldLight = '#F0D080';
+  const goldDark = '#7A5C1E';
+  const darkBg = '#1A1008';
+  const darkCard = '#211508';
+  const blue = '#1255A0';
+ 
   return (
-    <div style={{ padding:'24px 20px 100px', maxWidth:480, margin:'0 auto', fontFamily:'system-ui' }}>
-      <div style={{ marginBottom:28 }}>
-        <div style={{ fontSize:12, fontWeight:700, letterSpacing:'2px', color:blue, textTransform:'uppercase', marginBottom:4 }}>London Prayer Times</div>
-        {hijriDate && <div style={{ fontSize:13, color:'#999' }}>{hijriDate}</div>}
-      </div>
-      {prayers.length>0 && (
-        <div style={{ background:`linear-gradient(135deg,${blue},#2B7FD4)`, borderRadius:20, padding:'32px 24px', textAlign:'center', marginBottom:24, boxShadow:'0 8px 32px rgba(18,85,160,0.25)' }}>
-          <div style={{ fontSize:12, color:'rgba(255,255,255,0.6)', textTransform:'uppercase', letterSpacing:'2px', marginBottom:8 }}>Next prayer</div>
-          <div style={{ fontSize:32, fontWeight:800, color:'white', marginBottom:4 }}>{prayers[nextIndex].name}</div>
-          <div style={{ fontSize:16, color:'rgba(255,255,255,0.6)', marginBottom:20, fontFamily:'serif' }}>{prayers[nextIndex].arabic}</div>
-          <div style={{ fontSize:44, fontWeight:800, color:'white', fontVariantNumeric:'tabular-nums', letterSpacing:'-1px' }}>{countdown}</div>
-          <div style={{ fontSize:14, color:'rgba(255,255,255,0.5)', marginTop:8 }}>at {prayers[nextIndex].time}</div>
-        </div>
-      )}
-      <div style={{ background:'white', borderRadius:16, overflow:'hidden', boxShadow:'0 2px 16px rgba(18,85,160,0.07)', marginBottom:24 }}>
-        {prayers.map((p,i) => {
-          const isNext = i===nextIndex;
-          const [h,m] = p.time.split(':').map(Number);
-          const passed = h*60+m < new Date().getHours()*60+new Date().getMinutes();
-          return (
-            <div key={p.name} style={{ display:'flex', alignItems:'center', padding:'16px 20px', borderBottom:i<prayers.length-1?'1px solid #F0F5FF':'none', background:isNext?bluePale:'white' }}>
-              <div style={{ flex:1 }}>
-                <div style={{ fontSize:15, fontWeight:isNext?700:500, color:isNext?blue:passed?'#BBB':'#333' }}>{p.name}</div>
-                <div style={{ fontSize:11, color:'#BBB', fontFamily:'serif' }}>{p.arabic}</div>
-              </div>
-              <div style={{ fontSize:18, fontWeight:700, color:isNext?blue:passed?'#CCC':'#444' }}>{p.time}</div>
-              {isNext && <div style={{ marginLeft:12, background:blue, color:'white', fontSize:10, fontWeight:700, padding:'3px 8px', borderRadius:100, textTransform:'uppercase' as const }}>Next</div>}
+    <div style={{ minHeight:'100vh', background: darkBg, fontFamily:'system-ui', paddingBottom:80 }}>
+ 
+      {/* ── TOP STRIP: next prayer countdown ── */}
+      <div style={{ padding:'20px 20px 0' }}>
+        {nextPrayer && (
+          <div style={{
+            background: darkCard,
+            border: `1px solid ${goldDark}`,
+            borderRadius: 18,
+            padding: '18px 22px',
+            marginBottom: 16,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          }}>
+            <div>
+              <div style={{ fontSize:11, color: gold, textTransform:'uppercase', letterSpacing:'2px', marginBottom:4 }}>Next Prayer</div>
+              <div style={{ fontSize:26, fontWeight:800, color:'white' }}>{nextPrayer.name}</div>
+              <div style={{ fontSize:13, color: goldLight, fontFamily:'serif', marginTop:2 }}>{nextPrayer.arabic}</div>
             </div>
-          );
-        })}
+            <div style={{ textAlign:'right' as const }}>
+              <div style={{ fontSize:28, fontWeight:800, color: goldLight, fontVariantNumeric:'tabular-nums', letterSpacing:'-1px' }}>{countdown}</div>
+              <div style={{ fontSize:12, color:'rgba(255,255,255,0.4)', marginTop:4 }}>at {nextPrayer.time}</div>
+              {followingPrayer && (
+                <div style={{ fontSize:11, color: gold, marginTop:6 }}>
+                  Then {followingPrayer.name} · {followingPrayer.time}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+ 
+        {/* ── QIBLA COMPASS — hero ── */}
+        <div style={{
+          background: darkCard,
+          border: `1px solid ${goldDark}`,
+          borderRadius: 22,
+          padding: '24px 20px',
+          marginBottom: 16,
+          display: 'flex', flexDirection:'column', alignItems:'center',
+        }}>
+          <div style={{ fontSize:12, color: gold, textTransform:'uppercase', letterSpacing:'3px', marginBottom:4 }}>Qibla Compass</div>
+          <div style={{ fontSize:11, color:'rgba(255,255,255,0.35)', marginBottom:20 }}>Hold flat · arrow points to Makkah</div>
+ 
+          {compassPermission === 'unknown' && (
+            <div style={{ textAlign:'center' as const, paddingBottom:8 }}>
+              {/* Static preview compass */}
+              <CompassFace needleRot={QIBLA} gold={gold} goldLight={goldLight} goldDark={goldDark} active={false} />
+              <div style={{ fontSize:13, color:'rgba(255,255,255,0.6)', marginBottom:20, lineHeight:1.6 }}>
+                Tap to activate live compass.<br/>
+                <span style={{ fontSize:11, color:'rgba(255,255,255,0.3)' }}>No location stored.</span>
+              </div>
+              <button onClick={requestCompass} style={{
+                padding:'13px 32px', borderRadius:100,
+                background:`linear-gradient(135deg, ${goldDark}, ${gold})`,
+                color:'#1A1008', border:`1px solid ${goldLight}`,
+                fontSize:14, fontWeight:800, cursor:'pointer', letterSpacing:'1px',
+              }}>⌖ Activate Compass</button>
+            </div>
+          )}
+ 
+          {(compassPermission === 'denied' || compassPermission === 'unavailable') && (
+            <div style={{ textAlign:'center' as const }}>
+              <CompassFace needleRot={QIBLA} gold={gold} goldLight={goldLight} goldDark={goldDark} active={false} />
+              <div style={{ fontSize:13, color: gold, marginTop:12 }}>Static bearing: 119° SE from London</div>
+            </div>
+          )}
+ 
+          {compassPermission === 'granted' && (
+            <div style={{ display:'flex', flexDirection:'column' as const, alignItems:'center', width:'100%' }}>
+              <CompassFace needleRot={needleRot} gold={gold} goldLight={goldLight} goldDark={goldDark} active={true} />
+              <div style={{ marginTop:20, textAlign:'center' as const }}>
+                {heading !== null ? (
+                  <>
+                    <div style={{ fontSize:40, fontWeight:900, color: goldLight, fontVariantNumeric:'tabular-nums' }}>
+                      {Math.round(normalised)}°
+                    </div>
+                    <div style={{ fontSize:15, color: normalised<10||normalised>350 ? '#4ADE80' : 'rgba(255,255,255,0.7)', marginTop:6, fontWeight:600 }}>
+                      {normalised<10||normalised>350 ? '✓ Facing Qibla' : `Rotate ${Math.round(normalised)}° to face Makkah`}
+                    </div>
+                    <div style={{ fontSize:11, color:'rgba(255,255,255,0.25)', marginTop:4 }}>Compass: {Math.round(heading)}°</div>
+                  </>
+                ) : (
+                  <div style={{ fontSize:13, color:'rgba(255,255,255,0.4)' }}>Move phone slowly to calibrate...</div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+ 
+        {/* ── Full timetable toggle ── */}
+        <button
+          onClick={() => setShowTimetable(v => !v)}
+          style={{ width:'100%', padding:'13px', borderRadius:14, background:'transparent', border:`1px solid ${goldDark}`, color: gold, fontSize:13, fontWeight:700, cursor:'pointer', marginBottom:12, letterSpacing:'1px' }}
+        >
+          {showTimetable ? '▲ Hide Timetable' : '▼ Full Prayer Timetable'}
+        </button>
+ 
+        {showTimetable && (
+          <div style={{ background: darkCard, border:`1px solid ${goldDark}`, borderRadius:16, overflow:'hidden', marginBottom:16 }}>
+            {prayers.map((p,i) => {
+              const isNext = i===nextIndex;
+              const [h,m] = p.time.split(':').map(Number);
+              const passed = h*60+m < new Date().getHours()*60+new Date().getMinutes();
+              return (
+                <div key={p.name} style={{ display:'flex', alignItems:'center', padding:'14px 18px', borderBottom:i<prayers.length-1?`1px solid ${goldDark}33`:'none', background:isNext?`${goldDark}44`:'transparent' }}>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:15, fontWeight:isNext?700:400, color:isNext?goldLight:passed?'#555':'rgba(255,255,255,0.7)' }}>{p.name}</div>
+                    <div style={{ fontSize:11, color:'#555', fontFamily:'serif' }}>{p.arabic}</div>
+                  </div>
+                  <div style={{ fontSize:17, fontWeight:700, color:isNext?goldLight:passed?'#444':'rgba(255,255,255,0.5)' }}>{p.time}</div>
+                  {isNext && <div style={{ marginLeft:10, background: gold, color:'#1A1008', fontSize:9, fontWeight:800, padding:'3px 8px', borderRadius:100, textTransform:'uppercase' as const }}>Next</div>}
+                </div>
+              );
+            })}
+          </div>
+        )}
+ 
+        {hijriDate && (
+          <div style={{ textAlign:'center' as const, fontSize:11, color:'rgba(255,255,255,0.2)', marginBottom:8 }}>
+            {hijriDate} · ISNA calculation
+          </div>
+        )}
       </div>
-      {/* Live Qibla Compass */}
-      <QiblaCompass />
-      <div style={{ fontSize:12, color:'#BBB', textAlign:'center' as const }}>Calculation: ISNA · Source: Aladhan API 🌙</div>
+    </div>
+  );
+}
+ 
+// ─── COMPASS FACE COMPONENT ───────────────────────────────────
+function CompassFace({ needleRot, gold, goldLight, goldDark, active }: { needleRot:number; gold:string; goldLight:string; goldDark:string; active:boolean }) {
+  const size = 260;
+  return (
+    <div style={{ position:'relative', width:size, height:size, marginBottom:8 }}>
+      {/* Outer bezel — gold ring */}
+      <div style={{
+        position:'absolute', inset:0, borderRadius:'50%',
+        background:`conic-gradient(${goldDark}, ${gold}, ${goldLight}, ${gold}, ${goldDark}, ${gold}, ${goldLight}, ${gold}, ${goldDark})`,
+        boxShadow:`0 0 40px ${goldDark}88, inset 0 0 20px #00000066`,
+      }} />
+      {/* Inner face — dark */}
+      <div style={{
+        position:'absolute', inset:10, borderRadius:'50%',
+        background:'radial-gradient(circle at 40% 35%, #2A1A08, #0D0804)',
+        boxShadow:'inset 0 4px 20px #00000088',
+      }} />
+      {/* Tick marks */}
+      {Array.from({length:72}).map((_,i) => {
+        const major = i%9===0; const mid = i%3===0;
+        const h = major ? 14 : mid ? 9 : 5;
+        const w = major ? 3 : mid ? 2 : 1;
+        const color = major ? goldLight : mid ? gold : goldDark;
+        return (
+          <div key={i} style={{
+            position:'absolute', left:'50%', top:'50%',
+            width:w, height:h,
+            background: color,
+            borderRadius:1,
+            transformOrigin:'50% 100%',
+            transform:`translateX(-50%) translateY(-${size/2-12}px) rotate(${i*5}deg)`,
+          }} />
+        );
+      })}
+      {/* Cardinal labels */}
+      {[{l:'N',d:0,c:goldLight},{l:'E',d:90,c:gold},{l:'S',d:180,c:gold},{l:'W',d:270,c:gold}].map(({l,d,c}) => (
+        <div key={l} style={{
+          position:'absolute', left:'50%', top:'50%',
+          fontSize: l==='N'?16:13, fontWeight:800, color:c,
+          transform:`rotate(${d}deg) translateY(-${size/2-32}px) rotate(-${d}deg) translate(-50%,-50%)`,
+          fontFamily:'serif',
+        }}>{l}</div>
+      ))}
+      {/* Needle */}
+      <div style={{
+        position:'absolute', left:'50%', top:'50%',
+        transformOrigin:'50% 100%',
+        transform:`translateX(-50%) translateY(-100%) rotate(${needleRot}deg)`,
+        transition: active ? 'transform 0.12s ease-out' : 'none',
+        display:'flex', flexDirection:'column' as const, alignItems:'center',
+        pointerEvents:'none',
+      }}>
+        <div style={{ fontSize:24, lineHeight:1, marginBottom:2, filter:`drop-shadow(0 0 8px ${gold})` }}>🕋</div>
+        {/* Arrow */}
+        <div style={{ width:0, height:0, borderLeft:'5px solid transparent', borderRight:'5px solid transparent', borderBottom:`14px solid ${goldLight}`, marginBottom:0 }} />
+        <div style={{ width:3, height: size/2-50, background:`linear-gradient(to bottom, ${goldLight}, ${goldDark})`, borderRadius:'0 0 2px 2px' }} />
+      </div>
+      {/* Centre jewel */}
+      <div style={{
+        position:'absolute', left:'50%', top:'50%',
+        width:16, height:16, borderRadius:'50%',
+        background:`radial-gradient(circle at 35% 35%, ${goldLight}, ${goldDark})`,
+        transform:'translate(-50%,-50%)',
+        zIndex:10,
+        boxShadow:`0 0 10px ${gold}88`,
+        border:`1px solid ${gold}`,
+      }} />
+      {/* Decorative inner ring */}
+      <div style={{
+        position:'absolute', inset:40, borderRadius:'50%',
+        border:`1px solid ${goldDark}66`,
+        pointerEvents:'none',
+      }} />
     </div>
   );
 }
@@ -491,7 +570,7 @@ export default function App() {
           </div>
         </div>
       )}
-      {activePage==='prayer' && <div style={{ paddingTop:16 }}><PrayerTimes /></div>}
+      {activePage==='prayer' && <PrayerTimes />}
       {activePage==='leaderboard' && <div style={{ paddingTop:16 }}><Leaderboard /></div>}
       {activePage==='settings' && <div style={{ paddingTop:16 }}><Settings /></div>}
       <BottomNav activePage={activePage} onNavigate={handleNavigate} />
