@@ -339,7 +339,22 @@ function Leaderboard() {
   const [myPoints, setMyPoints] = useState(0);
   const [copied, setCopied] = useState(false);
   const blue = '#1255A0';
-  const gold = '#E8A020'; const silver = '#B0C4DE'; const bronze = '#CD9B6A';
+  // Rich deep podium colours — not flat, not childish
+  const gold1   = '#C9A84C'; // deep gold — 1st
+  const gold1L  = '#F0D080'; // light gold highlight
+  const silver1 = '#6B8FA8'; // deep steel blue — 2nd
+  const silver1L= '#A8C4D8'; // light steel
+  const bronze1 = '#8B5E3C'; // deep bronze — 3rd
+  const bronze1L= '#C4885A'; // light bronze
+  const podiumColors = [
+    { base: gold1,   light: gold1L,   label: '#3D2800' },
+    { base: silver1, light: silver1L, label: '#0A1F2E' },
+    { base: bronze1, light: bronze1L, label: '#2A1400' },
+  ];
+  // Dark moody backdrop
+  const bg = '#0F0F14';
+  const card = '#17171F';
+  const cardBorder = '#2A2A3A';
   const AVIS = ['🦁','🌙','🌿','🔥','🕊️','⭐','🌊','🏔️','🌸','✨'];
  
   useEffect(() => {
@@ -355,64 +370,112 @@ function Leaderboard() {
   };
  
   return (
-    <div style={{ padding:'24px 20px 100px', maxWidth:480, margin:'0 auto', fontFamily:'system-ui' }}>
-      <div style={{ marginBottom:28 }}>
-        <div style={{ fontSize:12, fontWeight:700, letterSpacing:'2px', color:blue, textTransform:'uppercase', marginBottom:6 }}>Top Contributors</div>
-        <div style={{ fontSize:22, fontWeight:800, color:'#111' }}>The Fassah Leaderboard</div>
-        <div style={{ fontSize:13, color:'#999', marginTop:4 }}>Every check-in is still earning reward long after you've forgotten about it. ✨</div>
-      </div>
-      <div style={{ background:`linear-gradient(135deg,${blue},#2B7FD4)`, borderRadius:16, padding:'16px 20px', marginBottom:24, display:'flex', alignItems:'center', gap:14 }}>
-        <div style={{ width:44, height:44, borderRadius:12, background:'rgba(255,255,255,0.15)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:22 }}>🦁</div>
-        <div style={{ flex:1 }}>
-          <div style={{ fontSize:14, fontWeight:700, color:'white' }}>{myUsername||'Loading...'}</div>
-          <div style={{ fontSize:11, color:'rgba(255,255,255,0.6)' }}>Your score</div>
+    <div style={{ minHeight:'100vh', background: bg, fontFamily:'system-ui', paddingBottom:100 }}>
+      {/* Header */}
+      <div style={{ padding:'24px 20px 0' }}>
+        <div style={{ fontSize:11, fontWeight:700, letterSpacing:'3px', color:'rgba(255,255,255,0.3)', textTransform:'uppercase', marginBottom:6 }}>Hall of Fame</div>
+        <div style={{ fontSize:26, fontWeight:800, color:'white', marginBottom:4 }}>Fassah Leaderboard</div>
+        <div style={{ fontSize:13, color:'rgba(255,255,255,0.35)', marginBottom:24 }}>Every check-in earns reward long after you've forgotten. ✨</div>
+ 
+        {/* MY SCORE */}
+        <div style={{ background: card, border:`1px solid ${cardBorder}`, borderRadius:16, padding:'16px 18px', marginBottom:28, display:'flex', alignItems:'center', gap:14 }}>
+          <div style={{ width:46, height:46, borderRadius:12, background:'rgba(255,255,255,0.06)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24 }}>🦁</div>
+          <div style={{ flex:1 }}>
+            <div style={{ fontSize:15, fontWeight:700, color:'white' }}>{myUsername||'Loading...'}</div>
+            <div style={{ fontSize:11, color:'rgba(255,255,255,0.3)' }}>Your score</div>
+          </div>
+          <div style={{ textAlign:'right' as const }}>
+            <div style={{ fontSize:26, fontWeight:800, color: gold1L }}>{myPoints}</div>
+            <div style={{ fontSize:10, color:'rgba(255,255,255,0.3)' }}>pts</div>
+          </div>
         </div>
-        <div>
-          <div style={{ fontSize:24, fontWeight:800, color:'white' }}>{myPoints}</div>
-          <div style={{ fontSize:10, color:'rgba(255,255,255,0.5)', textAlign:'right' as const }}>pts</div>
-        </div>
-      </div>
-      {board.length>=3 && (
-        <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'center', gap:8, marginBottom:24 }}>
-          {[1,0,2].map(idx => {
-            const entry = board[idx];
-            const rank = idx+1;
-            const h = rank===1?80:rank===2?64:52;
-            const color = [gold,silver,bronze][idx];
-            const emoji = ['🥇','🥈','🥉'][idx];
-            return (
-              <div key={idx} style={{ display:'flex', flexDirection:'column', alignItems:'center', width:100 }}>
-                <div style={{ fontSize:22, marginBottom:4 }}>{AVIS[idx]}</div>
-                <div style={{ fontSize:12, fontWeight:700, color:'#333', maxWidth:90, textAlign:'center', marginBottom:2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{entry.username.split('_')[0]}</div>
-                <div style={{ fontSize:13, fontWeight:800, color, marginBottom:4 }}>{entry.points} pts</div>
-                <div style={{ width:'100%', height:h, background:color, borderRadius:'8px 8px 0 0', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20 }}>{emoji}</div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-      {board.length>3 && (
-        <div style={{ background:'white', borderRadius:16, overflow:'hidden', boxShadow:'0 2px 16px rgba(18,85,160,0.07)', marginBottom:24 }}>
-          {board.slice(3).map((entry,i) => (
-            <div key={i} style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', borderBottom:i<board.slice(3).length-1?'1px solid #F0F5FF':'none' }}>
-              <span style={{ fontSize:13, fontWeight:800, color:'#AAA', width:20, textAlign:'center' as const }}>{i+4}</span>
-              <div style={{ width:36, height:36, borderRadius:10, background:'#EBF4FF', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18 }}>{AVIS[(i+4)%AVIS.length]}</div>
-              <div style={{ flex:1 }}><div style={{ fontSize:13, fontWeight:500, color:'#333' }}>{entry.username}</div></div>
-              <span style={{ fontSize:14, fontWeight:700, color:'#6AAEE8' }}>{entry.points} pts</span>
+ 
+        {/* PODIUM — top 3 */}
+        {board.length>=3 && (
+          <div style={{ marginBottom:28 }}>
+            <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'center', gap:6 }}>
+              {[1,0,2].map(idx => {
+                const entry = board[idx];
+                const rank = idx+1;
+                const podH = rank===1?100:rank===2?78:62;
+                const p = podiumColors[idx];
+                const medals = ['🥇','🥈','🥉'];
+                return (
+                  <div key={idx} style={{ display:'flex', flexDirection:'column' as const, alignItems:'center', flex: rank===1?1.2:1 }}>
+                    {/* Avatar */}
+                    <div style={{
+                      width:44, height:44, borderRadius:12, marginBottom:6,
+                      background:`linear-gradient(135deg, ${p.base}, ${p.light})`,
+                      display:'flex', alignItems:'center', justifyContent:'center', fontSize:22,
+                      boxShadow:`0 4px 16px ${p.base}66`,
+                    }}>{AVIS[idx]}</div>
+                    {/* Name */}
+                    <div style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,0.8)', maxWidth:90, textAlign:'center' as const, marginBottom:2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                      {entry.username.split('_')[0]}
+                    </div>
+                    {/* Points */}
+                    <div style={{ fontSize:13, fontWeight:800, color: p.light, marginBottom:6 }}>{entry.points} pts</div>
+                    {/* Podium block */}
+                    <div style={{
+                      width:'100%', height:podH,
+                      background:`linear-gradient(to bottom, ${p.base}, ${p.base}88)`,
+                      borderRadius:'10px 10px 0 0',
+                      display:'flex', alignItems:'center', justifyContent:'center',
+                      flexDirection:'column' as const,
+                      boxShadow:`0 -4px 20px ${p.base}44`,
+                      border:`1px solid ${p.light}33`,
+                      borderBottom:'none',
+                    }}>
+                      <div style={{ fontSize:22 }}>{medals[idx]}</div>
+                      <div style={{ fontSize:11, fontWeight:800, color: p.label, marginTop:2 }}>#{rank}</div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          ))}
+            {/* Podium base */}
+            <div style={{ height:6, background:'rgba(255,255,255,0.05)', borderRadius:'0 0 8px 8px' }} />
+          </div>
+        )}
+ 
+        {/* RANKS 4-10 */}
+        {board.length>3 && (
+          <div style={{ background: card, border:`1px solid ${cardBorder}`, borderRadius:16, overflow:'hidden', marginBottom:24 }}>
+            {board.slice(3).map((entry,i) => (
+              <div key={i} style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 16px', borderBottom:i<board.slice(3).length-1?`1px solid ${cardBorder}`:'none' }}>
+                <span style={{ fontSize:12, fontWeight:800, color:'rgba(255,255,255,0.25)', width:20, textAlign:'center' as const }}>{i+4}</span>
+                <div style={{ width:36, height:36, borderRadius:10, background:'rgba(255,255,255,0.06)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18 }}>{AVIS[(i+4)%AVIS.length]}</div>
+                <div style={{ flex:1 }}><div style={{ fontSize:13, fontWeight:500, color:'rgba(255,255,255,0.7)' }}>{entry.username}</div></div>
+                <span style={{ fontSize:14, fontWeight:700, color: gold1 }}>{entry.points} pts</span>
+              </div>
+            ))}
+          </div>
+        )}
+ 
+        {board.length===0 && (
+          <div style={{ textAlign:'center' as const, padding:'40px 0', color:'rgba(255,255,255,0.2)' }}>
+            <div style={{ fontSize:40, marginBottom:12 }}>🏆</div>
+            <div>Be the first to earn points</div>
+          </div>
+        )}
+ 
+        {/* Islamic copy */}
+        <div style={{ background:'rgba(201,168,76,0.08)', border:'1px solid rgba(201,168,76,0.2)', borderRadius:14, padding:'16px 18px', marginBottom:20 }}>
+          <div style={{ fontSize:13, color:'rgba(255,255,255,0.6)', lineHeight:1.7, fontStyle:'italic' }}>
+            "The place you add today could help a brother or sister pray five years from now. Imagine the reward. One click away."
+          </div>
         </div>
-      )}
-      {board.length===0 && <div style={{ textAlign:'center', padding:'40px 0', color:'#BBB' }}><div style={{ fontSize:40, marginBottom:12 }}>🏆</div><div>Be the first to earn points</div></div>}
-      <div style={{ background:'#FFF9ED', border:'1px solid #FDE68A', borderRadius:14, padding:'16px 18px', marginBottom:20 }}>
-        <div style={{ fontSize:13, color:'#7A5B00', lineHeight:1.6 }}>"The place you add today could help a brother or sister pray five years from now. Imagine the reward. One click away."</div>
-      </div>
-      <div style={{ background:'white', borderRadius:16, padding:'20px', boxShadow:'0 2px 16px rgba(18,85,160,0.07)' }}>
-        <div style={{ fontSize:14, fontWeight:700, color:'#111', marginBottom:6 }}>Challenge a friend 🤝</div>
-        <div style={{ fontSize:13, color:'#666', marginBottom:14 }}>Invite a friend — when they check in you both get <strong style={{ color:blue }}>+5 bonus points</strong>.</div>
-        <button onClick={handleInvite} style={{ width:'100%', padding:'13px', background:`linear-gradient(135deg,${blue},#2B7FD4)`, color:'white', border:'none', borderRadius:12, fontSize:14, fontWeight:700, cursor:'pointer' }}>
-          {copied?'✅ Copied!':'📲 Share Fassah with a friend'}
-        </button>
+ 
+        {/* Invite */}
+        <div style={{ background: card, border:`1px solid ${cardBorder}`, borderRadius:16, padding:'20px' }}>
+          <div style={{ fontSize:14, fontWeight:700, color:'white', marginBottom:6 }}>Challenge a friend 🤝</div>
+          <div style={{ fontSize:13, color:'rgba(255,255,255,0.4)', marginBottom:14 }}>
+            Invite a friend — when they check in you both get <strong style={{ color: gold1L }}>+5 bonus points</strong>.
+          </div>
+          <button onClick={handleInvite} style={{ width:'100%', padding:'13px', background:`linear-gradient(135deg,${blue},#2B7FD4)`, color:'white', border:'none', borderRadius:12, fontSize:14, fontWeight:700, cursor:'pointer' }}>
+            {copied?'✅ Copied!':'📲 Share Fassah with a friend'}
+          </button>
+        </div>
       </div>
     </div>
   );
