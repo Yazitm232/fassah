@@ -28,6 +28,144 @@ function BottomNav({ activePage, onNavigate }: { activePage: string; onNavigate:
   );
 }
  
+// ─── LIVE QIBLA COMPASS ───────────────────────────────────────
+function QiblaCompass() {
+  const [heading, setHeading] = useState<number | null>(null);
+  const [permission, setPermission] = useState<'unknown'|'granted'|'denied'|'unavailable'>('unknown');
+  const QIBLA = 119;
+  const blue = '#1255A0';
+  const bluePale = '#EBF4FF';
+ 
+  const handleOrientation = (e: DeviceOrientationEvent & { webkitCompassHeading?: number }) => {
+    let h: number | null = null;
+    if (e.webkitCompassHeading !== undefined && e.webkitCompassHeading !== null) {
+      h = e.webkitCompassHeading;
+    } else if (e.alpha !== null && e.alpha !== undefined) {
+      h = 360 - e.alpha;
+    }
+    if (h !== null) setHeading(h);
+  };
+ 
+  const startListening = () => {
+    window.addEventListener('deviceorientationabsolute', handleOrientation as EventListener, true);
+    window.addEventListener('deviceorientation', handleOrientation as EventListener, true);
+  };
+ 
+  useEffect(() => {
+    return () => {
+      window.removeEventListener('deviceorientationabsolute', handleOrientation as EventListener, true);
+      window.removeEventListener('deviceorientation', handleOrientation as EventListener, true);
+    };
+  }, []);
+ 
+  const requestPermission = async () => {
+    if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+      try {
+        const res = await (DeviceOrientationEvent as any).requestPermission();
+        if (res === 'granted') { setPermission('granted'); startListening(); }
+        else setPermission('denied');
+      } catch { setPermission('denied'); }
+    } else if (window.DeviceOrientationEvent) {
+      setPermission('granted');
+      startListening();
+    } else {
+      setPermission('unavailable');
+    }
+  };
+ 
+  const needleRot = heading !== null ? QIBLA - heading : 0;
+  const normalised = ((needleRot % 360) + 360) % 360;
+ 
+  return (
+    <div style={{ background:'white', borderRadius:16, padding:'20px', boxShadow:'0 2px 16px rgba(18,85,160,0.07)', marginBottom:24 }}>
+      <div style={{ fontSize:13, fontWeight:700, color:blue, marginBottom:4, textTransform:'uppercase' as const, letterSpacing:'1px' }}>🧭 Live Qibla Compass</div>
+      <div style={{ fontSize:12, color:'#999', marginBottom:16 }}>Hold phone flat — arrow points to Makkah</div>
+ 
+      {permission === 'unknown' && (
+        <div style={{ textAlign:'center' as const, paddingBottom:8 }}>
+          <div style={{ fontSize:48, marginBottom:12 }}>🕋</div>
+          <div style={{ fontSize:14, color:'#555', marginBottom:16, lineHeight:1.5 }}>
+            Activate the live Qibla compass.<br/>
+            <span style={{ fontSize:12, color:'#AAA' }}>Uses your phone compass · no location stored.</span>
+          </div>
+          <button onClick={requestPermission} style={{ padding:'12px 28px', borderRadius:12, background:`linear-gradient(135deg,${blue},#2B7FD4)`, color:'white', border:'none', fontSize:14, fontWeight:700, cursor:'pointer' }}>
+            Activate Compass
+          </button>
+        </div>
+      )}
+ 
+      {permission === 'denied' && (
+        <div style={{ textAlign:'center' as const, color:'#999', fontSize:13, padding:'12px 0' }}>
+          Compass permission denied. Please allow motion access in your browser settings.<br/>
+          <strong>Static bearing: 119° South-East from London.</strong>
+        </div>
+      )}
+ 
+      {permission === 'unavailable' && (
+        <div style={{ textAlign:'center' as const, color:'#999', fontSize:13, padding:'12px 0' }}>
+          Compass not available on this device.<br/>
+          <strong>Qibla is 119° South-East from London.</strong>
+        </div>
+      )}
+ 
+      {permission === 'granted' && (
+        <div style={{ display:'flex', flexDirection:'column' as const, alignItems:'center' }}>
+          {/* Compass */}
+          <div style={{ position:'relative', width:200, height:200, marginBottom:16 }}>
+            {/* Outer ring */}
+            <div style={{ position:'absolute', inset:0, borderRadius:'50%', border:`3px solid ${bluePale}`, background:'#FAFCFF' }} />
+            {/* Tick marks */}
+            {Array.from({length:12}).map((_,i) => (
+              <div key={i} style={{
+                position:'absolute', left:'50%', top:'50%', width:2, height:i%3===0?12:6,
+                background: i%3===0 ? blue : '#DDE8F8',
+                transformOrigin:'bottom center',
+                transform:`translateX(-50%) translateY(-97px) rotate(${i*30}deg)`,
+              }} />
+            ))}
+            {/* Cardinal labels */}
+            {[{l:'N',d:0},{l:'E',d:90},{l:'S',d:180},{l:'W',d:270}].map(({l,d}) => (
+              <div key={l} style={{
+                position:'absolute', left:'50%', top:'50%',
+                fontSize:11, fontWeight:700,
+                color: l==='N' ? blue : '#BCC8D8',
+                transform:`rotate(${d}deg) translateY(-80px) rotate(-${d}deg) translate(-50%,-50%)`,
+              }}>{l}</div>
+            ))}
+            {/* Needle — rotates to point Qibla */}
+            <div style={{
+              position:'absolute', left:'50%', top:'50%',
+              transformOrigin:'50% 100%',
+              transform:`translateX(-50%) translateY(-100%) rotate(${needleRot}deg)`,
+              transition:'transform 0.15s ease-out',
+              display:'flex', flexDirection:'column' as const, alignItems:'center',
+            }}>
+              {/* Kaaba at tip */}
+              <div style={{ fontSize:22, lineHeight:1, marginBottom:2 }}>🕋</div>
+              {/* Arrow shaft */}
+              <div style={{ width:4, height:68, background:`linear-gradient(to bottom,${blue},#5B9FE8)`, borderRadius:'2px 2px 0 0' }} />
+            </div>
+            {/* Centre dot */}
+            <div style={{ position:'absolute', left:'50%', top:'50%', width:14, height:14, borderRadius:'50%', background:blue, transform:'translate(-50%,-50%)', zIndex:2, border:'2px solid white' }} />
+          </div>
+ 
+          {heading !== null ? (
+            <div style={{ textAlign:'center' as const }}>
+              <div style={{ fontSize:32, fontWeight:800, color:blue }}>{Math.round(normalised)}°</div>
+              <div style={{ fontSize:14, color:'#555', marginTop:4 }}>
+                {normalised < 10 || normalised > 350 ? "You're facing Qibla! 🕋" : `Turn ${Math.round(normalised)}° to face Makkah`}
+              </div>
+              <div style={{ fontSize:11, color:'#AAA', marginTop:4 }}>Compass heading: {Math.round(heading)}°</div>
+            </div>
+          ) : (
+            <div style={{ fontSize:13, color:'#AAA', textAlign:'center' as const }}>Waiting for compass signal... move your phone slowly.</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+ 
 // ─── PRAYER TIMES PAGE ────────────────────────────────────────
 function PrayerTimes() {
   const [prayers, setPrayers] = useState<{name:string;time:string;arabic:string}[]>([]);
@@ -108,16 +246,9 @@ function PrayerTimes() {
           );
         })}
       </div>
-      <div style={{ background:'white', borderRadius:16, padding:'20px', boxShadow:'0 2px 16px rgba(18,85,160,0.07)' }}>
-        <div style={{ fontSize:13, fontWeight:700, color:blue, marginBottom:12, textTransform:'uppercase' as const, letterSpacing:'1px' }}>🧭 Qibla — London</div>
-        <div style={{ display:'flex', alignItems:'center', gap:16 }}>
-          <div style={{ width:64, height:64, borderRadius:'50%', background:bluePale, border:`2px solid ${blue}`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>🕋</div>
-          <div>
-            <div style={{ fontSize:22, fontWeight:800, color:'#111' }}>119°</div>
-            <div style={{ fontSize:13, color:'#666' }}>South-East from London</div>
-          </div>
-        </div>
-      </div>
+      {/* Live Qibla Compass */}
+      <QiblaCompass />
+      <div style={{ fontSize:12, color:'#BBB', textAlign:'center' as const }}>Calculation: ISNA · Source: Aladhan API 🌙</div>
     </div>
   );
 }
@@ -253,7 +384,7 @@ function Settings() {
       </div>
       <Section title="Points">
         <div style={{ display:'flex', justifyContent:'space-between', padding:'14px 16px' }}>
-          {[{n:points,l:'Total'},{n:'+2',l:'Check-in'},{n:'+10',l:'Space added'}].map(s=>(
+          {[{n:String(points),l:'Total'},{n:'+2',l:'Check-in'},{n:'+10',l:'Space added'}].map(s=>(
             <div key={s.l} style={{ textAlign:'center' as const, flex:1 }}>
               <div style={{ fontSize:22, fontWeight:800, color:blue }}>{s.n}</div>
               <div style={{ fontSize:11, color:'#AAA', marginTop:2 }}>{s.l}</div>
@@ -263,7 +394,7 @@ function Settings() {
       </Section>
       <Section title="App">
         <Row icon="🔒" label="Privacy Policy" onPress={()=>window.open('https://fassah.com/privacy','_blank')} />
-        <Row icon="📲" label="Share Fassah" onPress={()=>navigator.share&&navigator.share({title:'Fassah',url:'https://fassah.com'})} />
+        <Row icon="📲" label="Share Fassah" onPress={()=>{if(navigator.share)navigator.share({title:'Fassah',url:'https://fassah.com'});}} />
         <Row icon="✉️" label="Contact" value="hello@fassah.com" onPress={()=>window.open('mailto:hello@fassah.com','_blank')} />
         <Row icon="🚩" label="Report a space" onPress={()=>window.open('mailto:hello@fassah.com?subject=Space report','_blank')} />
       </Section>
