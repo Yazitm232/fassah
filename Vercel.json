@@ -1,16 +1,20 @@
 {
-  "rewrites": [
+  "routes": [
     {
-      "source": "/app",
-      "destination": "/index.html"
+      "src": "/",
+      "dest": "/landing.html"
     },
     {
-      "source": "/app/(.*)",
-      "destination": "/index.html"
+      "src": "/app",
+      "dest": "/index.html"
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/app/(.*)",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ],
   "headers": [
@@ -32,10 +36,6 @@
         {
           "key": "Referrer-Policy",
           "value": "strict-origin-when-cross-origin"
-        },
-        {
-          "key": "Permissions-Policy",
-          "value": "camera=(), microphone=(), geolocation=(self)"
         }
       ]
     }
