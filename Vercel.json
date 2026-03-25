@@ -7,12 +7,10 @@
     {
       "source": "/app/(.*)",
       "destination": "/index.html"
-    }
-  ],
-  "routes": [
+    },
     {
-      "src": "/",
-      "dest": "/landing.html"
+      "source": "/",
+      "destination": "/landing.html"
     }
   ],
   "headers": [
