@@ -1,4 +1,4 @@
-a{
+{
   "rewrites": [
     {
       "source": "/app",
@@ -9,7 +9,7 @@ a{
       "destination": "/index.html"
     },
     {
-      "source": "/",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ],
@@ -32,6 +32,10 @@ a{
         {
           "key": "Referrer-Policy",
           "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=(self)"
         }
       ]
     }
