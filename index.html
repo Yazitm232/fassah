@@ -1,31 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#1255A0" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Fassah" />
-    <meta name="description" content="Find somewhere to pray — anywhere in the UK. Community-built map of prayer spaces." />
-    <meta property="og:title" content="Fassah — Find Your Space to Pray" />
-    <meta property="og:description" content="Community-built map of prayer spaces across the UK." />
-    <meta property="og:url" content="https://fassah.com" />
-    <meta property="og:type" content="website" />
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="apple-touch-icon" href="/icon-192.png" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <title>Fassah — Find Your Space to Pray</title>
-    <style>
-      * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
-      body { margin: 0; padding: 0; overscroll-behavior: none; -webkit-overflow-scrolling: touch; }
-      html { height: 100%; }
-      #root { min-height: 100vh; min-height: -webkit-fill-available; }
-    </style>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#1255A0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Fassah" />
+  <meta name="description" content="Find somewhere to pray — anywhere in the UK. Community-built map of prayer spaces." />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <title>Fassah — Find Your Space to Pray</title>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+    body { margin: 0; padding: 0; overscroll-behavior: none; -webkit-overflow-scrolling: touch; }
+    html { height: 100%; }
+    #root { min-height: 100vh; min-height: -webkit-fill-available; }
+    #landing-root { display: none; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <div id="landing-root"></div>
+  <script>
+    // Route: / or /landing → show landing page
+    // Route: /app or anything else → show React app
+    var path = window.location.pathname;
+    var isApp = path.startsWith('/app') || path.startsWith('/src') || path.startsWith('/assets');
+    var isRoot = path === '/' || path === '' || path === '/landing';
  
+    if (isRoot) {
+      // Hide react root, show landing
+      document.getElementById('root').style.display = 'none';
+      document.getElementById('landing-root').style.display = 'block';
+      // Fetch and inject landing page
+      fetch('/landing.html')
+        .then(function(r) { return r.text(); })
+        .then(function(html) {
+          // Extract body content
+          var bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+          var headMatch = html.match(/<head[^>]*>([\s\S]*)<\/head>/i);
+          if (headMatch) {
+            // Inject styles and fonts
+            var tempDiv = document.createElement('div');
+            tempDiv.innerHTML = headMatch[1];
+            var styles = tempDiv.querySelectorAll('style, link');
+            styles.forEach(function(el) { document.head.appendChild(el.cloneNode(true)); });
+          }
+          if (bodyMatch) {
+            document.getElementById('landing-root').innerHTML = bodyMatch[1];
+            // Re-run scripts
+            var scripts = document.getElementById('landing-root').querySelectorAll('script');
+            scripts.forEach(function(oldScript) {
+              var newScript = document.createElement('script');
+              newScript.textContent = oldScript.textContent;
+              oldScript.parentNode.replaceChild(newScript, oldScript);
+            });
+          }
+          // Update title
+          document.title = 'Fassah — Find Your Space to Pray';
+        })
+        .catch(function(e) {
+          // Fallback: redirect to app
+          window.location.href = '/app';
+        });
+    } else {
+      // Load React app normally
+      document.getElementById('landing-root').style.display = 'none';
+    }
+  </script>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>
