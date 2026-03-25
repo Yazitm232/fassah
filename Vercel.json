@@ -1,11 +1,4 @@
-{
-  "redirects": [
-    {
-      "source": "/",
-      "destination": "/landing.html",
-      "permanent": false
-    }
-  ],
+a{
   "rewrites": [
     {
       "source": "/app",
@@ -13,6 +6,10 @@
     },
     {
       "source": "/app/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/",
       "destination": "/index.html"
     }
   ],
