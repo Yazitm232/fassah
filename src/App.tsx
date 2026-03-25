@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import MapView from './components/MapView';
 import SpacePopup from './components/SpacePopup';
 import SubmitSpaceForm from './components/SubmitSpaceForm';
-import Privacy from './pages/Privacy';
+ 
 import { fetchVerifiedSpaces, fetchLeaderboard, getOrCreateSession, addPoints, Space } from './lib/supabase';
  
 // ── Fake users to seed leaderboard feel ──────────────────────
@@ -20,6 +20,50 @@ const FAKE_USERS = [
   { username: 'OmarSaeed', points: 61 },
   { username: 'NoorEldin', points: 55 },
 ];
+ 
+ 
+// ─── PRIVACY PAGE (inlined to avoid import path issues) ───────
+function Privacy() {
+  const blue = '#1255A0';
+  const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+    <div style={{ marginBottom: 28 }}>
+      <div style={{ fontSize: 15, fontWeight: 700, color: blue, marginBottom: 8 }}>{title}</div>
+      <div style={{ fontSize: 14, color: '#444', lineHeight: 1.8 }}>{children}</div>
+    </div>
+  );
+  return (
+    <div style={{ maxWidth: 640, margin: '0 auto', padding: '32px 20px 80px', fontFamily: 'system-ui' }}>
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: blue, textTransform: 'uppercase' as const, letterSpacing: '2px', marginBottom: 8 }}>Legal</div>
+        <div style={{ fontSize: 28, fontWeight: 800, color: '#111', marginBottom: 4 }}>Privacy Policy</div>
+        <div style={{ fontSize: 13, color: '#999' }}>Last updated: March 2026 · Fassah · fassah.com</div>
+      </div>
+      <Section title="1. Who We Are">Fassah is a community-built map that helps Muslims in the UK find somewhere to pray. Based in the United Kingdom. Contact: hello@fassah.com</Section>
+      <Section title="2. What Data We Collect">
+        <strong>Anonymous session:</strong> A randomly generated username stored in localStorage — not linked to your identity.<br /><br />
+        <strong>Check-ins:</strong> Your anonymous session ID, space ID, and your answers. We do not store GPS location.<br /><br />
+        <strong>Submitted spaces:</strong> Name, address, description, photo. Not linked to your identity.<br /><br />
+        <strong>We never collect:</strong> your name, email, phone, precise location, or device identifiers.
+      </Section>
+      <Section title="3. How We Use Your Data">To display prayer spaces · Show check-in summaries · Calculate leaderboard points · Improve space quality. We do not use your data for advertising. We do not sell your data. Ever.</Section>
+      <Section title="4. Cookies and Local Storage">We use localStorage for your anonymous session. No third-party tracking cookies. Cloudflare Turnstile sets a security-only session cookie.</Section>
+      <Section title="5. Third-Party Services">
+        <strong>Supabase</strong> — database, EU servers · supabase.com/privacy<br />
+        <strong>Google Maps</strong> — map display · policies.google.com/privacy<br />
+        <strong>Cloudflare Turnstile</strong> — bot protection · cloudflare.com/privacypolicy<br />
+        <strong>Aladhan API</strong> — prayer times, no personal data sent
+      </Section>
+      <Section title="6. Data Retention">Anonymous session data kept indefinitely to preserve points. Delete account via Settings → Delete Account to remove all data within 30 days.</Section>
+      <Section title="7. Your Rights (UK GDPR)">Access · Deletion · Object to processing · Complain to ICO (ico.org.uk). Email hello@fassah.com with your session ID.</Section>
+      <Section title="8. Children">Not directed at under-13s. Contact hello@fassah.com to remove any child data.</Section>
+      <Section title="9. Changes">Latest version always at fassah.com/?page=privacy. Continued use = acceptance.</Section>
+      <Section title="10. Contact">Fassah · hello@fassah.com · fassah.com · Registered in England and Wales.</Section>
+      <div style={{ marginTop: 40, padding: '16px 20px', background: '#F0F5FF', borderRadius: 12, fontSize: 13, color: blue, textAlign: 'center' as const }}>
+        بِسْمِ اللهِ · Free to use · No ads · No data sold · Built for the ummah
+      </div>
+    </div>
+  );
+}
  
 // ── Safe area helper ──────────────────────────────────────────
 const safeBottom = 'env(safe-area-inset-bottom, 0px)';
@@ -600,4 +644,3 @@ export default function App() {
     </div>
   );
 }
- 
