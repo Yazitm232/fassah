@@ -1,22 +1,31 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Fassah — Find your space to pray. The community map of prayer spaces across the UK. Not just mosques — parks, multi-faith rooms, quiet corners and more." />
-    <meta name="theme-color" content="#2B7FD4" />
-    <meta property="og:title" content="Fassah — Find your space to pray" />
-    <meta property="og:description" content="The community map of prayer spaces across the UK. Built by Muslims, for Muslims." />
-    <meta property="og:type" content="website" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#1255A0" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Fassah" />
+    <meta name="description" content="Find somewhere to pray — anywhere in the UK. Community-built map of prayer spaces." />
+    <meta property="og:title" content="Fassah — Find Your Space to Pray" />
+    <meta property="og:description" content="Community-built map of prayer spaces across the UK." />
     <meta property="og:url" content="https://fassah.com" />
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Fassah — Find your space to pray" />
-    <meta name="twitter:description" content="The community map of prayer spaces across the UK." />
-    <title>Fassah — Find your space to pray</title>
+    <meta property="og:type" content="website" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <title>Fassah — Find Your Space to Pray</title>
+    <style>
+      * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+      body { margin: 0; padding: 0; overscroll-behavior: none; -webkit-overflow-scrolling: touch; }
+      html { height: 100%; }
+      #root { min-height: 100vh; min-height: -webkit-fill-available; }
+    </style>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
+ 
