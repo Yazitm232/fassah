@@ -16,6 +16,14 @@
   <link rel="apple-touch-icon" href="/logo.png" />
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
   <title>Fassah — Find Your Space to Pray</title>
+
+  <!-- ✅ FIX: Safety net — redirect root hits to landing page -->
+  <script>
+    if (window.location.pathname === '/' || window.location.pathname === '') {
+      window.location.replace('/');
+    }
+  </script>
+
   <style>
     * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
     body { margin: 0; padding: 0; overscroll-behavior: none; -webkit-overflow-scrolling: touch; }
@@ -28,4 +36,3 @@
   <script type="module" src="/src/main.tsx"></script>
 </body>
 </html>
- 
