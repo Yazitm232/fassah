@@ -757,7 +757,7 @@ export default function App() {
   
   // Route: / → landing page, /app → the actual app
   const path = window.location.pathname;
-  const isLanding = path === '/' || path === '' || path === '/landing';
+  const isLanding = !path.startsWith('/app');
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [selectedSpace, setSelectedSpace] = useState<Space | null>(null);
   const [showSubmitForm, setShowSubmitForm] = useState(false);
