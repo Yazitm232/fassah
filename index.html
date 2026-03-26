@@ -1,38 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#1255A0" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Fassah" />
-  <meta name="description" content="Find somewhere to pray — anywhere in the UK. Community-built map of prayer spaces." />
-  <meta property="og:title" content="Fassah — Find Your Space to Pray" />
-  <meta property="og:description" content="Community-built map of prayer spaces across the UK." />
-  <meta property="og:url" content="https://fassah.com" />
-  <meta property="og:type" content="website" />
-  <link rel="manifest" href="/manifest.json" />
-  <link rel="apple-touch-icon" href="/logo.png" />
-  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-  <title>Fassah — Find Your Space to Pray</title>
-
-  <!-- ✅ FIX: Safety net — redirect root hits to landing page -->
-  <script>
-    if (window.location.pathname === '/' || window.location.pathname === '') {
-      window.location.replace('/');
-    }
-  </script>
-
-  <style>
-    * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
-    body { margin: 0; padding: 0; overscroll-behavior: none; -webkit-overflow-scrolling: touch; }
-    html { height: 100%; }
-    #root { min-height: 100vh; min-height: -webkit-fill-available; }
-  </style>
-</head>
-<body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.tsx"></script>
-</body>
-</html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0,
+  user-scalable=no" />
+    <meta name="theme-color" content="#1255A0" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Fassah" />
+    <meta name="description" content="Find somewhere to pray — anywhere in the UK. Community-built map of prayer
+  spaces." />
+    <meta property="og:title" content="Fassah — Find Your Space to Pray" />
+    <meta property="og:description" content="Community-built map of prayer spaces across the UK." />
+    <meta property="og:url" content="https://fassah.com" />
+    <meta property="og:type" content="website" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/logo.png" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <title>Fassah — Find Your Space to Pray</title>
+    <style>
+      * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+      body { margin: 0; padding: 0; overscroll-behavior: none; -webkit-overflow-scrolling: touch; }
+      html { height: 100%; }
+      #root { min-height: 100vh; min-height: -webkit-fill-available; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+  </html>
