@@ -1,16 +1,21 @@
-
-  import { defineConfig } from 'vite'
-  import react from '@vitejs/plugin-react'
-  import { resolve } from 'path'
-
-  export default defineConfig({
-    plugins: [react()],
-    build: {
-      rollupOptions: {
-        input: {
-          main: resolve(__dirname, 'index.html'),
-          app: resolve(__dirname, 'app.html'),
-        }
-      }
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/spaces",   "destination": "/spaces.html" },
+    { "source": "/about",    "destination": "/about.html" },
+    { "source": "/download", "destination": "/download.html" },
+    { "source": "/app/(.*)", "destination": "/app.html" },
+    { "source": "/app",      "destination": "/app.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options",        "value": "SAMEORIGIN" },
+        { "key": "Referrer-Policy",        "value": "strict-origin-when-cross-origin" }
+      ]
     }
-  })
+  ]
+}

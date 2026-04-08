@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mission — Fassah</title>
+  <meta name="description" content="Fassah was built by a Muslim student who got stuck without a place to pray. This is why it exists.">
+  <meta name="theme-color" content="#050C1A">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --bg:#050C1A; --surface:#0A1628; --surface-2:#0F1F35;
+      --border:rgba(255,255,255,0.06); --border-h:rgba(255,255,255,0.11);
+      --text:#E8F0FF; --muted:rgba(232,240,255,0.52); --subtle:rgba(232,240,255,0.26);
+      --accent:#00B4D8; --accent-2:#1565C0; --green:#22C55E; --gold:#D4A843;
+      --ease-out:cubic-bezier(0.23,1,0.32,1);
+    }
+    html { scroll-behavior:smooth; }
+    body { font-family:'Inter',-apple-system,sans-serif; background:var(--bg); color:var(--text); line-height:1.6; overflow-x:hidden; }
+
+    #prog { position:fixed; top:0; left:0; z-index:300; height:2px; width:0%; background:linear-gradient(90deg,var(--accent),var(--accent-2)); transition:width 80ms linear; }
+
+    nav { position:fixed; top:0; left:0; right:0; z-index:200; height:64px; display:flex; align-items:center; justify-content:space-between; padding:0 max(20px,calc((100vw - 1160px)/2)); background:rgba(5,12,26,0.75); backdrop-filter:blur(24px) saturate(160%); border-bottom:1px solid var(--border); transition:border-color 200ms ease; }
+    nav.up { border-bottom-color:var(--border-h); }
+    .logo { font-family:'Cormorant Garamond',serif; font-size:21px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--text); text-decoration:none; }
+    .logo em { font-style:normal; background:linear-gradient(135deg,#00B4D8,#42A5F5); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .nav-mid { display:flex; gap:4px; list-style:none; }
+    .nav-mid a { color:var(--muted); text-decoration:none; font-size:14px; font-weight:500; padding:7px 13px; border-radius:8px; transition:color 140ms ease,background 140ms ease; }
+    .nav-mid a:hover { color:var(--text); background:rgba(255,255,255,0.05); }
+    .nav-mid a.active { color:var(--text); }
+    .nav-right { display:flex; gap:8px; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; text-decoration:none; border:none; cursor:pointer; font-family:inherit; font-weight:600; border-radius:9px; transition:transform 160ms var(--ease-out),box-shadow 160ms ease,background 140ms ease; }
+    .btn:active { transform:scale(0.97) !important; }
+    .btn-pri { padding:9px 18px; font-size:14px; background:linear-gradient(135deg,#00B4D8,#1565C0); color:#fff; }
+    .btn-pri:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(0,180,216,0.28); }
+    .btn-ghost { padding:9px 18px; font-size:14px; background:rgba(255,255,255,0.05); border:1px solid var(--border-h); color:var(--text); }
+    .btn-ghost:hover { background:rgba(255,255,255,0.09); transform:translateY(-1px); }
+
+    .sec-tag { font-size:11px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:3.5px; margin-bottom:14px; }
+    .pad { padding:0 max(20px,calc((100vw - 1160px)/2)); }
+
+    /* ── Hero ── */
+    .about-hero {
+      padding:140px max(20px,calc((100vw - 860px)/2)) 80px;
+      text-align:center; position:relative; overflow:hidden;
+    }
+    .about-hero::before {
+      content:''; position:absolute; top:-250px; left:50%; transform:translateX(-50%);
+      width:900px; height:900px;
+      background:radial-gradient(ellipse,rgba(0,180,216,0.07) 0%,transparent 68%);
+      pointer-events:none;
+    }
+    .about-hero .sec-tag { display:flex; justify-content:center; }
+    .about-hero h1 {
+      font-family:'Cormorant Garamond',serif;
+      font-size:clamp(42px,5.5vw,78px); font-weight:600;
+      line-height:1.06; letter-spacing:-.02em; margin-bottom:24px;
+    }
+    .about-hero h1 em { font-style:italic; }
+    .about-hero p {
+      font-size:18px; color:var(--muted); line-height:1.75;
+      max-width:640px; margin:0 auto;
+    }
+
+    /* ── Divider line ── */
+    .divider {
+      height:1px; background:var(--border);
+      margin:0 max(20px,calc((100vw - 1160px)/2));
+    }
+
+    /* ── Origin story ── */
+    .story {
+      padding:100px max(20px,calc((100vw - 1160px)/2));
+      display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center;
+    }
+    .story-quote {
+      position:relative; padding:32px 28px;
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:16px;
+    }
+    .story-quote::before {
+      content:'"';
+      font-family:'Cormorant Garamond',serif; font-size:100px; font-weight:700;
+      color:rgba(0,180,216,.12); position:absolute; top:-16px; left:16px;
+      line-height:1;
+    }
+    .story-quote p {
+      font-family:'Cormorant Garamond',serif; font-style:italic;
+      font-size:clamp(19px,2vw,25px); line-height:1.55; color:var(--text);
+      position:relative; z-index:1;
+    }
+    .story-attr {
+      display:flex; align-items:center; gap:12px; margin-top:20px;
+    }
+    .story-avatar {
+      width:40px; height:40px; border-radius:50%;
+      background:linear-gradient(135deg,#1E40AF,#0369A1);
+      display:flex; align-items:center; justify-content:center; font-size:18px;
+      flex-shrink:0;
+    }
+    .story-name { font-size:14px; font-weight:700; }
+    .story-role { font-size:12px; color:var(--muted); }
+
+    .story-text h2 {
+      font-family:'Cormorant Garamond',serif;
+      font-size:clamp(30px,3vw,44px); font-weight:600;
+      line-height:1.12; letter-spacing:-.02em; margin-bottom:20px;
+    }
+    .story-text p {
+      font-size:15px; color:var(--muted); line-height:1.8; margin-bottom:16px;
+    }
+    .story-text p:last-child { margin-bottom:0; }
+    .story-text strong { color:var(--text); font-weight:600; }
+
+    /* ── What fassah means ── */
+    .meaning {
+      padding:80px max(20px,calc((100vw - 1160px)/2));
+      text-align:center;
+      background:var(--surface);
+      border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+    }
+    .arabic-big {
+      font-family:'Cormorant Garamond',serif; font-size:clamp(64px,8vw,108px);
+      font-weight:700; letter-spacing:6px; line-height:1;
+      background:linear-gradient(135deg,#00B4D8,#42A5F5,#D4A843);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      background-clip:text; margin-bottom:12px;
+    }
+    .meaning-word { font-family:'Cormorant Garamond',serif; font-size:38px; font-weight:600; margin-bottom:8px; }
+    .meaning-def { font-size:16px; color:var(--muted); max-width:500px; margin:0 auto; }
+    .meaning-pills { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:24px; }
+    .mpill { padding:5px 14px; border-radius:100px; font-size:13px; font-weight:600; background:rgba(0,180,216,.08); border:1px solid rgba(0,180,216,.2); color:var(--accent); }
+
+    /* ── Values ── */
+    .values { padding:100px max(20px,calc((100vw - 1160px)/2)); }
+    .values h2 { font-family:'Cormorant Garamond',serif; font-size:clamp(32px,3.5vw,50px); font-weight:600; line-height:1.1; letter-spacing:-.02em; margin-bottom:52px; }
+    .vals-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+    .val {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:14px; padding:28px 22px;
+      transition:border-color 240ms ease,transform 240ms var(--ease-out);
+    }
+    .val:hover { border-color:var(--border-h); transform:translateY(-3px); }
+    .val-ico { font-size:28px; margin-bottom:14px; }
+    .val-t { font-size:17px; font-weight:700; margin-bottom:8px; }
+    .val-d { font-size:13px; color:var(--muted); line-height:1.68; }
+
+    /* ── Timeline ── */
+    .timeline { padding:100px max(20px,calc((100vw - 860px)/2)); }
+    .timeline h2 { font-family:'Cormorant Garamond',serif; font-size:clamp(32px,3.5vw,50px); font-weight:600; line-height:1.1; letter-spacing:-.02em; margin-bottom:52px; text-align:center; }
+    .tl { position:relative; }
+    .tl::before { content:''; position:absolute; left:50%; transform:translateX(-50%); top:0; bottom:0; width:1px; background:var(--border); }
+    .tl-item { display:grid; grid-template-columns:1fr 40px 1fr; gap:0 20px; margin-bottom:48px; align-items:start; }
+    .tl-item:nth-child(odd) .tl-content { grid-column:1; text-align:right; padding-right:20px; }
+    .tl-item:nth-child(odd) .tl-content { order:1; }
+    .tl-item:nth-child(odd) .tl-dot { order:2; }
+    .tl-item:nth-child(odd) .tl-empty { order:3; }
+    .tl-item:nth-child(even) .tl-empty { grid-column:1; order:1; }
+    .tl-item:nth-child(even) .tl-dot { order:2; }
+    .tl-item:nth-child(even) .tl-content { grid-column:3; padding-left:20px; order:3; }
+    .tl-dot {
+      width:40px; height:40px; border-radius:50%;
+      background:var(--surface); border:2px solid rgba(0,180,216,.35);
+      display:flex; align-items:center; justify-content:center;
+      font-size:16px; flex-shrink:0; position:relative; z-index:1;
+      justify-self:center;
+    }
+    .tl-year { font-size:11px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:2px; margin-bottom:4px; }
+    .tl-t { font-size:16px; font-weight:700; margin-bottom:5px; }
+    .tl-d { font-size:13px; color:var(--muted); line-height:1.65; }
+    .tl-empty { } /* spacer */
+
+    /* ── CTA ── */
+    .about-cta {
+      padding:100px max(20px,calc((100vw - 900px)/2));
+      text-align:center;
+    }
+    .about-cta h2 { font-family:'Cormorant Garamond',serif; font-size:clamp(34px,4vw,56px); font-weight:600; line-height:1.1; letter-spacing:-.02em; margin-bottom:16px; }
+    .about-cta p { font-size:16px; color:var(--muted); line-height:1.72; max-width:560px; margin:0 auto 36px; }
+    .cta-row { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+    .cta-row .btn { padding:13px 26px; font-size:15px; border-radius:10px; }
+
+    /* ── Footer ── */
+    footer { padding:36px max(20px,calc((100vw - 1160px)/2)); border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:18px; }
+    .foot-links { display:flex; gap:22px; list-style:none; }
+    .foot-links a { color:var(--muted); text-decoration:none; font-size:13px; transition:color 130ms ease; }
+    .foot-links a:hover { color:var(--text); }
+    .foot-copy { font-size:12px; color:var(--subtle); }
+
+    /* ── Animations ── */
+    .rv { opacity:0; transform:translateY(16px); transition:opacity 560ms var(--ease-out),transform 560ms var(--ease-out); }
+    .rv.in { opacity:1; transform:none; }
+    .d1{transition-delay:0ms} .d2{transition-delay:60ms} .d3{transition-delay:120ms} .d4{transition-delay:180ms}
+
+    @media(max-width:860px){
+      .story { grid-template-columns:1fr; gap:40px; }
+      .vals-grid { grid-template-columns:repeat(2,1fr); }
+      .tl::before { left:20px; }
+      .tl-item { grid-template-columns:40px 1fr; }
+      .tl-item:nth-child(odd) .tl-content,
+      .tl-item:nth-child(even) .tl-content { grid-column:2; text-align:left; padding-left:20px; padding-right:0; order:2; }
+      .tl-item:nth-child(odd) .tl-dot,
+      .tl-item:nth-child(even) .tl-dot { order:1; grid-column:1; }
+      .tl-item:nth-child(odd) .tl-empty,
+      .tl-item:nth-child(even) .tl-empty { display:none; }
+    }
+    @media(max-width:600px){ .nav-mid{display:none;} .vals-grid{grid-template-columns:1fr;} }
+    @media(prefers-reduced-motion:reduce){ .rv{transition:opacity 200ms ease;transform:none;} }
+  </style>
+</head>
+<body>
+
+<div id="prog"></div>
+
+<nav id="nav">
+  <a href="index.html" class="logo">FASS<em>AH</em></a>
+  <ul class="nav-mid">
+    <li><a href="app.html">Map</a></li>
+    <li><a href="download.html">App</a></li>
+    <li><a href="about.html" class="active">Mission</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="app.html" class="btn btn-ghost">Open Map</a>
+    <a href="download.html" class="btn btn-pri">Get the App</a>
+  </div>
+</nav>
+
+<!-- ═══ HERO ══════════════════════════════════════════════ -->
+<div class="about-hero">
+  <div class="sec-tag rv">Our story</div>
+  <h1 class="rv d2">
+    Built by a Muslim,<br>
+    for <em>everyone</em><br>who needs to pray.
+  </h1>
+  <p class="rv d3">
+    Fassah started with one problem: being somewhere new, Asr time closing in, and no idea where to go. That should never happen.
+  </p>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══ ORIGIN STORY ══════════════════════════════════════ -->
+<section class="story">
+  <div class="story-quote rv d1">
+    <p>
+      I was in central London, a meeting ran over, and I realised I had 20 minutes before Asr would pass. I had no idea where the nearest prayer space was. I missed it.
+    </p>
+    <div class="story-attr">
+      <div class="story-avatar">Y</div>
+      <div>
+        <div class="story-name">Yaasir — Founder</div>
+        <div class="story-role">CS Student, Brunel University · London</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="story-text rv d2">
+    <h2>Why Fassah exists.</h2>
+    <p>
+      That moment wasn't unique. <strong>3.5 million Muslims live in the UK.</strong> Every single one of them needs to find somewhere to pray, five times a day, wherever life takes them.
+    </p>
+    <p>
+      The information exists — mosques, university prayer rooms, quiet outdoor corners, business prayer spaces. But it's scattered across Google Maps, WhatsApp groups, word of mouth, and personal memory. There's no single place to find it all.
+    </p>
+    <p>
+      Fassah is that place. Community-built. Free forever. No account required. No ads. Just a map that helps Muslims never miss Salah because they didn't know where to go.
+    </p>
+    <p>
+      And it's not just for Muslims — <strong>anyone</strong> who needs a quiet, respectful space to pause and reflect can use it.
+    </p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ MEANING ════════════════════════════════════════════ -->
+<section class="meaning">
+  <div class="arabic-big rv">فَسَاح</div>
+  <div class="meaning-word rv d2">Fassah</div>
+  <p class="meaning-def rv d3">
+    From Arabic — <em>fassāḥ</em> — meaning spaciousness, openness, a wide and expansive place. The very feeling you want before prayer.
+  </p>
+  <div class="meaning-pills rv d4">
+    <span class="mpill">Openness</span>
+    <span class="mpill">Spaciousness</span>
+    <span class="mpill">Freedom</span>
+    <span class="mpill">Room to breathe</span>
+  </div>
+</section>
+
+<!-- ═══ VALUES ════════════════════════════════════════════ -->
+<section class="values">
+  <div class="sec-tag rv">What we stand for</div>
+  <h2 class="rv d2">Built with<br>intention.</h2>
+  <div class="vals-grid">
+    <div class="val rv d1">
+      <div class="val-ico">🤲</div>
+      <div class="val-t">Sadaqah Jariyah</div>
+      <div class="val-d">Every space mapped, every prayer enabled — this is ongoing reward. The whole platform is designed as an act of continuous charity.</div>
+    </div>
+    <div class="val rv d2">
+      <div class="val-ico">🌍</div>
+      <div class="val-t">Universal, not niche</div>
+      <div class="val-d">Muslim-built doesn't mean Muslim-only. Anyone seeking a peaceful space to pause belongs here. We build for people, not boxes.</div>
+    </div>
+    <div class="val rv d3">
+      <div class="val-ico">🔓</div>
+      <div class="val-t">Free forever</div>
+      <div class="val-d">No paywall. No account. No ads. If you need to find a prayer space, you find one. Full stop. This is non-negotiable.</div>
+    </div>
+    <div class="val rv d1">
+      <div class="val-ico">👥</div>
+      <div class="val-t">Community-powered</div>
+      <div class="val-d">The map grows because the community grows it. Every check-in, every new space added, every vote — it's people helping people.</div>
+    </div>
+    <div class="val rv d2">
+      <div class="val-ico">📱</div>
+      <div class="val-t">Digital-first</div>
+      <div class="val-d">Built for how Muslims actually live — on the move, in cities, with a phone. No flyers, no noticeboard, no directory from 2009.</div>
+    </div>
+    <div class="val rv d3">
+      <div class="val-ico">🔒</div>
+      <div class="val-t">Privacy by default</div>
+      <div class="val-d">No tracking, no account needed, no selling data. You use the app. We don't use you.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ TIMELINE ═══════════════════════════════════════════ -->
+<section class="timeline">
+  <div class="sec-tag rv" style="text-align:center;display:flex;justify-content:center;">The journey</div>
+  <h2 class="rv d2">How we got here.</h2>
+  <div class="tl">
+
+    <div class="tl-item rv d1">
+      <div class="tl-content">
+        <div class="tl-year">The problem</div>
+        <div class="tl-t">Missed Asr in London</div>
+        <div class="tl-d">A 20-minute window, a meeting overrun, and no idea where to pray. The idea for Fassah starts here.</div>
+      </div>
+      <div class="tl-dot">🕐</div>
+      <div class="tl-empty"></div>
+    </div>
+
+    <div class="tl-item rv d2">
+      <div class="tl-empty"></div>
+      <div class="tl-dot">🗺️</div>
+      <div class="tl-content">
+        <div class="tl-year">Research</div>
+        <div class="tl-t">Mapping the gap</div>
+        <div class="tl-d">Spent weeks speaking to Muslims across London. The problem was universal — and nobody had solved it properly.</div>
+      </div>
+    </div>
+
+    <div class="tl-item rv d1">
+      <div class="tl-content">
+        <div class="tl-year">Building</div>
+        <div class="tl-t">First version launched</div>
+        <div class="tl-d">A simple web map. 40 spaces. Shared in a WhatsApp group. 200 visitors in the first week.</div>
+      </div>
+      <div class="tl-dot">🚀</div>
+      <div class="tl-empty"></div>
+    </div>
+
+    <div class="tl-item rv d2">
+      <div class="tl-empty"></div>
+      <div class="tl-dot">📡</div>
+      <div class="tl-content">
+        <div class="tl-year">Growth</div>
+        <div class="tl-t">247+ spaces, 12 cities</div>
+        <div class="tl-d">The community started adding their own spaces. Check-ins went live. The map started breathing on its own.</div>
+      </div>
+    </div>
+
+    <div class="tl-item rv d1">
+      <div class="tl-content">
+        <div class="tl-year">Now</div>
+        <div class="tl-t">Native app in development</div>
+        <div class="tl-d">Prayer times, GPS, real-time check-ins, community ranks. The full vision — coming to App Store &amp; Google Play.</div>
+      </div>
+      <div class="tl-dot">📱</div>
+      <div class="tl-empty"></div>
+    </div>
+
+    <div class="tl-item rv d2">
+      <div class="tl-empty"></div>
+      <div class="tl-dot">🌍</div>
+      <div class="tl-content">
+        <div class="tl-year">Vision</div>
+        <div class="tl-t">Every Muslim city, worldwide</div>
+        <div class="tl-d">London was just the beginning. Birmingham, Manchester, then beyond the UK. Wherever Muslims are, Fassah should be.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ FINAL CTA ══════════════════════════════════════════ -->
+<section class="about-cta">
+  <div class="sec-tag rv" style="justify-content:center;display:flex;">Join us</div>
+  <h2 class="rv d2">Be part of<br>the map.</h2>
+  <p class="rv d3">
+    Every space you add helps a Muslim you'll never meet find somewhere to pray. That's the whole point — and it's enough.
+  </p>
+  <div class="cta-row rv d4">
+    <a href="app.html" class="btn btn-pri">Find a Space →</a>
+    <a href="download.html" class="btn btn-ghost">Get the App</a>
+  </div>
+</section>
+
+<footer>
+  <a href="index.html" class="logo">FASS<em>AH</em></a>
+  <ul class="foot-links">
+    <li><a href="app.html">Map</a></li>
+    <li><a href="download.html">App</a></li>
+    <li><a href="about.html">Mission</a></li>
+    <li><a href="mailto:hello@fassah.com">Contact</a></li>
+    <li><a href="#">Privacy</a></li>
+  </ul>
+  <div class="foot-copy">© 2025 Fassah. Free forever.</div>
+</footer>
+
+<script>
+  const prog = document.getElementById('prog');
+  const nav  = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+    prog.style.width = (pct * 100) + '%';
+    nav.classList.toggle('up', window.scrollY > 24);
+  }, { passive: true });
+
+  const obs = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); obs.unobserve(e.target); } }), { threshold: 0.1, rootMargin: '0px 0px -20px 0px' });
+  document.querySelectorAll('.rv').forEach(el => obs.observe(el));
+  setTimeout(() => document.querySelectorAll('.about-hero .rv').forEach(el => el.classList.add('in')), 80);
+</script>
+</body>
+</html>
