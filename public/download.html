@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Get the App — Fassah</title>
+  <meta name="description" content="Fassah for iOS and Android. Prayer times, GPS space finder, live check-ins and community ranks — coming soon.">
+  <meta name="theme-color" content="#050C1A">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --bg:#050C1A; --surface:#0A1628; --surface-2:#0F1F35;
+      --border:rgba(255,255,255,0.06); --border-h:rgba(255,255,255,0.11);
+      --text:#E8F0FF; --muted:rgba(232,240,255,0.52); --subtle:rgba(232,240,255,0.26);
+      --accent:#00B4D8; --accent-2:#1565C0; --green:#22C55E; --gold:#D4A843;
+      --ease-out:cubic-bezier(0.23,1,0.32,1);
+    }
+    html { scroll-behavior:smooth; }
+    body { font-family:'Inter',-apple-system,sans-serif; background:var(--bg); color:var(--text); line-height:1.6; overflow-x:hidden; }
+
+    #prog { position:fixed; top:0; left:0; z-index:300; height:2px; width:0%; background:linear-gradient(90deg,var(--accent),var(--accent-2)); transition:width 80ms linear; }
+
+    nav { position:fixed; top:0; left:0; right:0; z-index:200; height:64px; display:flex; align-items:center; justify-content:space-between; padding:0 max(20px,calc((100vw - 1160px)/2)); background:rgba(5,12,26,0.75); backdrop-filter:blur(24px) saturate(160%); border-bottom:1px solid var(--border); transition:border-color 200ms ease; }
+    nav.up { border-bottom-color:var(--border-h); }
+    .logo { font-family:'Cormorant Garamond',serif; font-size:21px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--text); text-decoration:none; }
+    .logo em { font-style:normal; background:linear-gradient(135deg,#00B4D8,#42A5F5); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .nav-mid { display:flex; gap:4px; list-style:none; }
+    .nav-mid a { color:var(--muted); text-decoration:none; font-size:14px; font-weight:500; padding:7px 13px; border-radius:8px; transition:color 140ms ease,background 140ms ease; }
+    .nav-mid a:hover { color:var(--text); background:rgba(255,255,255,0.05); }
+    .nav-mid a.active { color:var(--text); }
+    .nav-right { display:flex; gap:8px; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; text-decoration:none; border:none; cursor:pointer; font-family:inherit; font-weight:600; border-radius:9px; transition:transform 160ms var(--ease-out),box-shadow 160ms ease,background 140ms ease; }
+    .btn:active { transform:scale(0.97) !important; }
+    .btn-pri { padding:9px 18px; font-size:14px; background:linear-gradient(135deg,#00B4D8,#1565C0); color:#fff; }
+    .btn-pri:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(0,180,216,0.28); }
+    .btn-ghost { padding:9px 18px; font-size:14px; background:rgba(255,255,255,0.05); border:1px solid var(--border-h); color:var(--text); }
+    .btn-ghost:hover { background:rgba(255,255,255,0.09); transform:translateY(-1px); }
+
+    /* ── App Hero ── */
+    .app-hero {
+      min-height:100svh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+      text-align:center; padding:100px max(20px,calc((100vw - 900px)/2)) 80px;
+      position:relative; overflow:hidden;
+    }
+    .hero-glow-1 { position:absolute; top:-200px; left:-200px; width:700px; height:700px; background:radial-gradient(ellipse,rgba(0,180,216,0.08) 0%,transparent 68%); pointer-events:none; }
+    .hero-glow-2 { position:absolute; bottom:-200px; right:-200px; width:700px; height:700px; background:radial-gradient(ellipse,rgba(21,101,192,0.07) 0%,transparent 68%); pointer-events:none; }
+    .coming-badge {
+      display:inline-flex; align-items:center; gap:8px;
+      padding:5px 14px; border-radius:100px;
+      background:rgba(212,168,67,.1); border:1px solid rgba(212,168,67,.28);
+      font-size:12px; font-weight:600; color:var(--gold); margin-bottom:24px;
+    }
+    .app-hero h1 { font-family:'Cormorant Garamond',serif; font-size:clamp(46px,5.5vw,80px); font-weight:600; line-height:1.06; letter-spacing:-.02em; margin-bottom:20px; }
+    .app-hero h1 .grad { background:linear-gradient(135deg,#00B4D8 0%,#42A5F5 45%,#D4A843 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .app-hero p { font-size:18px; color:var(--muted); max-width:560px; line-height:1.72; margin-bottom:40px; }
+
+    .store-row { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-bottom:24px; }
+    .store-btn {
+      display:flex; align-items:center; gap:12px;
+      padding:14px 22px; background:var(--surface); border:1px solid var(--border-h);
+      border-radius:13px; text-decoration:none; color:var(--text);
+      transition:background 140ms ease,transform 160ms var(--ease-out);
+      min-width:190px;
+    }
+    .store-btn:hover { background:var(--surface-2); transform:translateY(-2px); }
+    .store-btn:active { transform:scale(0.97); }
+    .store-ico { font-size:28px; flex-shrink:0; }
+    .store-sub { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; }
+    .store-name { font-size:17px; font-weight:700; }
+    .soon-tag { display:inline-block; font-size:10px; color:var(--accent); background:rgba(0,180,216,.1); border:1px solid rgba(0,180,216,.2); border-radius:4px; padding:1px 6px; margin-left:6px; vertical-align:middle; }
+
+    .notify-row { display:flex; gap:8px; justify-content:center; max-width:420px; margin:0 auto; }
+    .notify-input {
+      flex:1; background:var(--surface); border:1px solid var(--border-h);
+      border-radius:10px; padding:12px 16px; color:var(--text); font-family:inherit;
+      font-size:14px; outline:none; transition:border-color 160ms ease,box-shadow 160ms ease;
+    }
+    .notify-input::placeholder { color:var(--subtle); }
+    .notify-input:focus { border-color:rgba(0,180,216,.4); box-shadow:0 0 0 3px rgba(0,180,216,.08); }
+    .notify-note { font-size:12px; color:var(--subtle); margin-top:10px; text-align:center; }
+
+    /* ── Phone showcase ── */
+    .phones-showcase {
+      padding:100px max(20px,calc((100vw - 1160px)/2));
+      display:flex; gap:24px; justify-content:center; align-items:flex-end;
+      position:relative;
+    }
+    .phones-showcase::before {
+      content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      width:600px; height:600px;
+      background:radial-gradient(ellipse,rgba(0,180,216,0.05) 0%,transparent 68%);
+      pointer-events:none;
+    }
+
+    .phone {
+      width:268px; height:564px; background:#07111E;
+      border-radius:42px; border:1.5px solid rgba(255,255,255,0.09);
+      overflow:hidden; position:relative;
+      box-shadow:0 50px 100px rgba(0,0,0,0.55),0 0 0 1px rgba(255,255,255,0.04),inset 0 1px 0 rgba(255,255,255,0.07);
+    }
+    .phone::before { content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:82px; height:24px; background:#07111E; border-radius:0 0 16px 16px; z-index:10; }
+    .phone-sm { width:230px; height:480px; }
+    .phone-sm::before { width:72px; }
+    .phone-offset-l { transform:rotate(-4deg) translateX(-10px); opacity:.7; }
+    .phone-offset-r { transform:rotate(4deg) translateX(10px); opacity:.7; }
+
+    .pi { width:100%; height:100%; background:#F8FAFC; display:flex; flex-direction:column; font-family:'Inter',sans-serif; font-size:11px; }
+    .pi-sb { background:#fff; padding:28px 14px 0; display:flex; justify-content:space-between; font-size:10px; font-weight:700; color:#0F172A; }
+    .pi-hd { background:#fff; padding:8px 12px 8px; border-bottom:1px solid #E2E8F0; }
+    .pi-lr { display:flex; justify-content:space-between; align-items:center; margin-bottom:7px; }
+    .pi-logo { font-size:15px; font-weight:900; color:#0F172A; font-family:'Cormorant Garamond',serif; letter-spacing:1px; }
+    .pi-logo span { color:#00B4D8; }
+    .pi-add { background:#3B82F6; color:#fff; font-size:9px; font-weight:700; padding:3px 7px; border-radius:5px; }
+    .pi-chips { display:flex; gap:4px; }
+    .pi-chip { padding:3px 8px; border-radius:12px; font-size:9px; font-weight:600; background:#F1F5F9; color:#94A3B8; }
+    .pi-chip.on { background:#3B82F6; color:#fff; }
+    .pi-body { padding:8px; flex:1; overflow:hidden; }
+    .pi-grid { display:flex; gap:5px; }
+    .pi-col { flex:1; display:flex; flex-direction:column; gap:5px; }
+    .pi-card { border-radius:9px; overflow:hidden; position:relative; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+    .pi-card-ov { position:absolute; bottom:0; left:0; right:0; padding:6px; background:linear-gradient(transparent,rgba(0,0,0,.78)); }
+    .pi-cn { font-size:9px; font-weight:700; color:#fff; }
+    .pi-vt { position:absolute; top:4px; right:4px; font-size:8px; font-weight:700; color:#fff; background:rgba(59,130,246,.88); padding:1px 4px; border-radius:4px; }
+    .g-blue { background:linear-gradient(135deg,#1E40AF,#0F172A); }
+    .g-green { background:linear-gradient(135deg,#059669,#065F46); }
+    .g-purple { background:linear-gradient(135deg,#7C3AED,#4C1D95); }
+    .g-navy { background:linear-gradient(135deg,#0369A1,#082F49); }
+    .g-slate { background:linear-gradient(135deg,#475569,#0F172A); }
+    .pi-tabs { background:#fff; border-top:1px solid #E2E8F0; display:flex; justify-content:space-around; padding:7px 0 14px; }
+    .pi-tab { display:flex; flex-direction:column; align-items:center; gap:2px; font-size:8px; color:#94A3B8; font-weight:600; }
+    .pi-tab.on { color:#3B82F6; }
+    .pi-ti { font-size:13px; }
+
+    /* Prayer time screen */
+    .prayer-screen { padding:16px 12px; background:#F8FAFC; height:100%; overflow:hidden; }
+    .ps-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+    .ps-title { font-size:14px; font-weight:800; color:#0F172A; font-family:'Cormorant Garamond',serif; }
+    .ps-date { font-size:9px; color:#94A3B8; }
+    .ps-next { background:linear-gradient(135deg,#1E40AF,#0369A1); border-radius:12px; padding:14px; margin-bottom:12px; color:#fff; }
+    .ps-next-lbl { font-size:8px; text-transform:uppercase; letter-spacing:1px; opacity:.7; margin-bottom:4px; }
+    .ps-next-time { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:700; line-height:1; margin-bottom:2px; }
+    .ps-next-name { font-size:10px; opacity:.8; }
+    .ps-next-bar { margin-top:10px; height:2px; background:rgba(255,255,255,.2); border-radius:1px; }
+    .ps-next-fill { height:100%; width:65%; background:rgba(255,255,255,.7); border-radius:1px; }
+    .ps-list { display:flex; flex-direction:column; gap:4px; }
+    .ps-item { display:flex; justify-content:space-between; align-items:center; padding:7px 9px; border-radius:8px; background:#fff; border:1px solid #E2E8F0; font-size:10px; }
+    .ps-item.done { opacity:.4; }
+    .ps-item.active { background:#EFF6FF; border-color:#BFDBFE; }
+    .ps-name { font-weight:700; color:#0F172A; }
+    .ps-time { color:#3B82F6; font-weight:600; }
+    .ps-done { color:#22C55E; font-size:10px; }
+
+    /* Ranks screen */
+    .ranks-screen { padding:14px 12px; background:#F8FAFC; height:100%; overflow:hidden; }
+    .rk-head { font-size:14px; font-weight:800; color:#0F172A; font-family:'Cormorant Garamond',serif; margin-bottom:12px; }
+    .rk-you { background:linear-gradient(135deg,#1E40AF,#0369A1); border-radius:10px; padding:12px; color:#fff; margin-bottom:10px; display:flex; align-items:center; gap:10px; }
+    .rk-avatar { width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,.2); display:flex; align-items:center; justify-content:center; font-size:14px; }
+    .rk-you-name { font-size:11px; font-weight:700; }
+    .rk-you-pts { font-size:9px; opacity:.75; }
+    .rk-rank-num { margin-left:auto; font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:700; }
+    .rk-list { display:flex; flex-direction:column; gap:5px; }
+    .rk-item { display:flex; align-items:center; gap:8px; padding:7px 9px; border-radius:8px; background:#fff; border:1px solid #E2E8F0; }
+    .rk-pos { font-size:10px; font-weight:800; color:#94A3B8; width:14px; }
+    .rk-av { width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; }
+    .rk-uname { font-size:10px; font-weight:600; color:#0F172A; }
+    .rk-upts { font-size:9px; color:#64748B; margin-left:auto; }
+
+    /* ── Features deep ── */
+    .features-section {
+      padding:100px max(20px,calc((100vw - 1160px)/2));
+    }
+    .sec-tag { font-size:11px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:3.5px; margin-bottom:14px; }
+    .sec-h { font-family:'Cormorant Garamond',serif; font-size:clamp(34px,3.8vw,54px); font-weight:600; line-height:1.1; letter-spacing:-.02em; margin-bottom:56px; max-width:560px; }
+
+    .feat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+    .feat-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:14px; padding:28px 24px;
+      position:relative; overflow:hidden;
+      transition:border-color 240ms ease,transform 240ms var(--ease-out);
+    }
+    .feat-card::after { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--accent),var(--accent-2)); opacity:0; transition:opacity 240ms ease; }
+    .feat-card:hover { border-color:var(--border-h); transform:translateY(-3px); }
+    .feat-card:hover::after { opacity:1; }
+    .fc-ico { font-size:28px; margin-bottom:16px; }
+    .fc-title { font-size:18px; font-weight:700; margin-bottom:8px; }
+    .fc-desc { font-size:13px; color:var(--muted); line-height:1.68; }
+    .fc-tag { display:inline-block; margin-top:12px; font-size:11px; font-weight:700; padding:3px 9px; border-radius:5px; }
+    .ft-new { background:rgba(34,197,94,.12); color:var(--green); }
+    .ft-soon { background:rgba(0,180,216,.1); color:var(--accent); }
+
+    /* ── Notify section ── */
+    .notify-section {
+      padding:100px max(20px,calc((100vw - 900px)/2));
+      text-align:center;
+    }
+    .notify-section h2 { font-family:'Cormorant Garamond',serif; font-size:clamp(36px,4vw,58px); font-weight:600; line-height:1.1; letter-spacing:-.02em; margin-bottom:16px; }
+    .notify-section p { font-size:16px; color:var(--muted); line-height:1.7; margin-bottom:36px; }
+    .notify-form { display:flex; gap:8px; max-width:440px; margin:0 auto 12px; }
+    .notify-input { flex:1; background:var(--surface); border:1px solid var(--border-h); border-radius:10px; padding:13px 16px; color:var(--text); font-family:inherit; font-size:14px; outline:none; transition:border-color 160ms ease,box-shadow 160ms ease; }
+    .notify-input::placeholder { color:var(--subtle); }
+    .notify-input:focus { border-color:rgba(0,180,216,.4); box-shadow:0 0 0 3px rgba(0,180,216,.08); }
+    .notify-sub { font-size:12px; color:var(--subtle); }
+
+    footer { padding:36px max(20px,calc((100vw - 1160px)/2)); border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:18px; }
+    .foot-links { display:flex; gap:22px; list-style:none; }
+    .foot-links a { color:var(--muted); text-decoration:none; font-size:13px; transition:color 130ms ease; }
+    .foot-links a:hover { color:var(--text); }
+    .foot-copy { font-size:12px; color:var(--subtle); }
+
+    .rv { opacity:0; transform:translateY(16px); transition:opacity 560ms var(--ease-out),transform 560ms var(--ease-out); }
+    .rv.in { opacity:1; transform:none; }
+    .d1{transition-delay:0ms} .d2{transition-delay:60ms} .d3{transition-delay:120ms} .d4{transition-delay:180ms}
+
+    @media(max-width:900px){ .feat-grid{grid-template-columns:repeat(2,1fr);} .phones-showcase .phone-offset-l,.phones-showcase .phone-offset-r{display:none;} }
+    @media(max-width:600px){ .nav-mid{display:none;} .feat-grid{grid-template-columns:1fr;} }
+    @media(prefers-reduced-motion:reduce){ .rv{transition:opacity 200ms ease;transform:none;} }
+  </style>
+</head>
+<body>
+
+<div id="prog"></div>
+
+<nav id="nav">
+  <a href="/" class="logo">FASS<em>AH</em></a>
+  <ul class="nav-mid">
+    <li><a href="/app">Map</a></li>
+    <li><a href="/download" class="active">App</a></li>
+    <li><a href="/about">Mission</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="/app" class="btn btn-ghost">Open Map</a>
+    <a href="#notify" class="btn btn-pri">Get Notified</a>
+  </div>
+</nav>
+
+<!-- ═══ HERO ══════════════════════════════════════════════ -->
+<div class="app-hero">
+  <div class="hero-glow-1"></div>
+  <div class="hero-glow-2"></div>
+  <div class="coming-badge rv">✦ Coming to App Store &amp; Google Play</div>
+  <h1 class="rv d2">
+    Salah, sorted.<br>
+    <span class="grad">Wherever you are.</span>
+  </h1>
+  <p class="rv d3">
+    Never miss a prayer again. Fassah finds you a space, shows you live check-ins from the community, and keeps your prayer streak going — all from your pocket.
+  </p>
+  <div class="store-row rv d4">
+    <a href="#notify" class="store-btn">
+      <span class="store-ico"></span>
+      <div><div class="store-sub">Download on the</div><div class="store-name">App Store<span class="soon-tag">Soon</span></div></div>
+    </a>
+    <a href="#notify" class="store-btn">
+      <span class="store-ico">▶</span>
+      <div><div class="store-sub">Get it on</div><div class="store-name">Google Play<span class="soon-tag">Soon</span></div></div>
+    </a>
+  </div>
+</div>
+
+<!-- ═══ 3 PHONE SHOWCASE ═══════════════════════════════════ -->
+<div class="phones-showcase">
+
+  <!-- Left: Prayer times screen -->
+  <div class="phone phone-sm phone-offset-l rv d1">
+    <div style="background:#F8FAFC; height:100%; padding:26px 10px 0; font-family:'Inter',sans-serif; overflow:hidden;">
+      <div style="background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.08);">
+        <div style="background:#0F172A; padding:10px 12px 8px;">
+          <div style="font-size:8px; color:rgba(255,255,255,.5); text-transform:uppercase; letter-spacing:1px; margin-bottom:2px;">Next Prayer</div>
+          <div style="font-family:'Cormorant Garamond',serif; font-size:26px; font-weight:700; color:#fff; line-height:1;">4:47 PM</div>
+          <div style="font-size:9px; color:rgba(255,255,255,.7);">Asr · 1h 23m away</div>
+          <div style="margin-top:8px; height:2px; background:rgba(255,255,255,.15); border-radius:1px;"><div style="width:62%; height:100%; background:#00B4D8; border-radius:1px;"></div></div>
+        </div>
+        <div style="padding:10px; display:flex; flex-direction:column; gap:4px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px; border-radius:7px; background:#F1F5F9; opacity:.45;"><span style="font-size:9px;font-weight:700;color:#0F172A;">Fajr</span><span style="font-size:9px;color:#22C55E;">✓ 5:20 AM</span></div>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px; border-radius:7px; background:#F1F5F9; opacity:.45;"><span style="font-size:9px;font-weight:700;color:#0F172A;">Dhuhr</span><span style="font-size:9px;color:#22C55E;">✓ 1:04 PM</span></div>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px; border-radius:7px; background:#EFF6FF; border:1px solid #BFDBFE;"><span style="font-size:9px;font-weight:700;color:#1D4ED8;">Asr</span><span style="font-size:9px;color:#3B82F6;font-weight:600;">4:47 PM</span></div>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px; border-radius:7px; background:#fff; border:1px solid #E2E8F0;"><span style="font-size:9px;font-weight:700;color:#0F172A;">Maghrib</span><span style="font-size:9px;color:#64748B;">7:52 PM</span></div>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px; border-radius:7px; background:#fff; border:1px solid #E2E8F0;"><span style="font-size:9px;font-weight:700;color:#0F172A;">Isha</span><span style="font-size:9px;color:#64748B;">9:24 PM</span></div>
+        </div>
+      </div>
+      <div style="text-align:center; padding:10px 0; font-size:8px; color:#94A3B8; text-transform:uppercase; letter-spacing:1.5px;">Prayer Times</div>
+    </div>
+  </div>
+
+  <!-- Centre: Discover screen -->
+  <div class="phone rv d2">
+    <div class="pi">
+      <div class="pi-sb"><span>9:41</span><span>●●●● ▲</span></div>
+      <div class="pi-hd">
+        <div class="pi-lr">
+          <div class="pi-logo">FASS<span>AH</span></div>
+          <div class="pi-add">+ Add Space</div>
+        </div>
+        <div class="pi-chips">
+          <div class="pi-chip on">All</div>
+          <div class="pi-chip">Mosque</div>
+          <div class="pi-chip">Outdoor</div>
+          <div class="pi-chip">Multi-faith</div>
+        </div>
+      </div>
+      <div class="pi-body">
+        <div class="pi-grid">
+          <div class="pi-col">
+            <div class="pi-card"><div class="g-blue" style="height:116px"></div><div class="pi-vt">↑ 12</div><div class="pi-card-ov"><div class="pi-cn">East London Mosque</div></div></div>
+            <div class="pi-card"><div class="g-green" style="height:76px"></div><div class="pi-vt">↑ 5</div><div class="pi-card-ov"><div class="pi-cn">Regent's Park</div></div></div>
+            <div class="pi-card"><div class="g-blue" style="height:96px"></div><div class="pi-vt">↑ 8</div><div class="pi-card-ov"><div class="pi-cn">Baitul Futuh</div></div></div>
+          </div>
+          <div class="pi-col">
+            <div class="pi-card"><div class="g-purple" style="height:68px"></div><div class="pi-vt">↑ 3</div><div class="pi-card-ov"><div class="pi-cn">UCL Multi-Faith</div></div></div>
+            <div class="pi-card"><div class="g-navy" style="height:110px"></div><div class="pi-vt">↑ 19</div><div class="pi-card-ov"><div class="pi-cn">London Central</div></div></div>
+            <div class="pi-card"><div class="g-slate" style="height:80px"></div><div class="pi-vt">↑ 2</div><div class="pi-card-ov"><div class="pi-cn">WeWork Room</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="pi-tabs">
+        <div class="pi-tab on"><span class="pi-ti">◉</span>Discover</div>
+        <div class="pi-tab"><span class="pi-ti">◷</span>Prayer</div>
+        <div class="pi-tab"><span class="pi-ti">◬</span>Map</div>
+        <div class="pi-tab"><span class="pi-ti">⊞</span>Ranks</div>
+        <div class="pi-tab"><span class="pi-ti">⚙</span>You</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Ranks screen -->
+  <div class="phone phone-sm phone-offset-r rv d3">
+    <div style="background:#F8FAFC; height:100%; font-family:'Inter',sans-serif; overflow:hidden; padding-top:28px;">
+      <div style="padding:0 12px 10px; font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:800; color:#0F172A;">Community Ranks</div>
+      <div style="margin:0 12px 10px; background:linear-gradient(135deg,#1E40AF,#0369A1); border-radius:10px; padding:12px; color:#fff; display:flex; align-items:center; gap:10px;">
+        <div style="width:30px; height:30px; border-radius:50%; background:rgba(255,255,255,.2); display:flex; align-items:center; justify-content:center; font-size:13px;">🙂</div>
+        <div><div style="font-size:11px;font-weight:700;">You</div><div style="font-size:9px;opacity:.75;">248 pts · 12 check-ins</div></div>
+        <div style="margin-left:auto; font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:700;">#14</div>
+      </div>
+      <div style="padding:0 12px; display:flex; flex-direction:column; gap:5px;">
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;background:#fff;border:1px solid #E2E8F0;">
+          <span style="font-size:9px;font-weight:800;color:#D4A843;width:14px;">1</span>
+          <div style="width:22px;height:22px;border-radius:50%;background:#FEF3C7;display:flex;align-items:center;justify-content:center;font-size:10px;">🌟</div>
+          <span style="font-size:10px;font-weight:600;color:#0F172A;">Ahmad K.</span>
+          <span style="font-size:9px;color:#64748B;margin-left:auto;">1,240 pts</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;background:#fff;border:1px solid #E2E8F0;">
+          <span style="font-size:9px;font-weight:800;color:#94A3B8;width:14px;">2</span>
+          <div style="width:22px;height:22px;border-radius:50%;background:#E0E7FF;display:flex;align-items:center;justify-content:center;font-size:10px;">🌙</div>
+          <span style="font-size:10px;font-weight:600;color:#0F172A;">Fatima H.</span>
+          <span style="font-size:9px;color:#64748B;margin-left:auto;">980 pts</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;background:#fff;border:1px solid #E2E8F0;">
+          <span style="font-size:9px;font-weight:800;color:#B45309;width:14px;">3</span>
+          <div style="width:22px;height:22px;border-radius:50%;background:#D1FAE5;display:flex;align-items:center;justify-content:center;font-size:10px;">✦</div>
+          <span style="font-size:10px;font-weight:600;color:#0F172A;">Omar S.</span>
+          <span style="font-size:9px;color:#64748B;margin-left:auto;">842 pts</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;background:#fff;border:1px solid #E2E8F0;">
+          <span style="font-size:9px;font-weight:800;color:#94A3B8;width:14px;">4</span>
+          <div style="width:22px;height:22px;border-radius:50%;background:#FCE7F3;display:flex;align-items:center;justify-content:center;font-size:10px;">🌺</div>
+          <span style="font-size:10px;font-weight:600;color:#0F172A;">Aisha M.</span>
+          <span style="font-size:9px;color:#64748B;margin-left:auto;">761 pts</span>
+        </div>
+      </div>
+      <div style="text-align:center; padding:10px 0; font-size:8px; color:#94A3B8; text-transform:uppercase; letter-spacing:1.5px;">Community Ranks</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ FEATURES ═══════════════════════════════════════════ -->
+<section class="features-section">
+  <div class="sec-tag rv">What's inside</div>
+  <h2 class="sec-h rv d2">Built for the Muslim<br>on the move.</h2>
+  <div class="feat-grid">
+    <div class="feat-card rv d1">
+      <div class="fc-ico">🕐</div>
+      <div class="fc-title">Accurate prayer times</div>
+      <div class="fc-desc">GPS-based calculation using your exact coordinates. Works anywhere in the world, updates as you travel.</div>
+      <span class="fc-tag ft-new">Live</span>
+    </div>
+    <div class="feat-card rv d2">
+      <div class="fc-ico">📍</div>
+      <div class="fc-title">GPS space finder</div>
+      <div class="fc-desc">Find the nearest prayer space to your current location in seconds. Filter by type, distance, and facilities.</div>
+      <span class="fc-tag ft-new">Live</span>
+    </div>
+    <div class="feat-card rv d3">
+      <div class="fc-ico">📡</div>
+      <div class="fc-title">Live community check-ins</div>
+      <div class="fc-desc">See if a space is currently busy or available before you travel — from people who are there right now.</div>
+      <span class="fc-tag ft-new">Live</span>
+    </div>
+    <div class="feat-card rv d1">
+      <div class="fc-ico">🏆</div>
+      <div class="fc-title">Community ranks</div>
+      <div class="fc-desc">Earn points for check-ins, adding spaces, and confirming conditions. Compete with the community.</div>
+      <span class="fc-tag ft-soon">In app</span>
+    </div>
+    <div class="feat-card rv d2">
+      <div class="fc-ico">🧭</div>
+      <div class="fc-title">Qibla compass</div>
+      <div class="fc-desc">Built-in compass showing the direction of Mecca from your current location. No guessing.</div>
+      <span class="fc-tag ft-soon">Coming soon</span>
+    </div>
+    <div class="feat-card rv d3">
+      <div class="fc-ico">🔔</div>
+      <div class="fc-title">Adhan reminders</div>
+      <div class="fc-desc">Optional push notifications before each prayer time so you can plan and find a space in advance.</div>
+      <span class="fc-tag ft-soon">Coming soon</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ NOTIFY CTA ══════════════════════════════════════════ -->
+<section class="notify-section" id="notify">
+  <div class="rv">
+    <div class="sec-tag" style="justify-content:center;display:flex;">Be first</div>
+    <h2>Get notified<br>when we launch.</h2>
+    <p>Drop your email. We'll let you know the moment Fassah hits the App Store and Google Play.</p>
+    <div class="notify-form rv d2">
+      <input class="notify-input" type="email" placeholder="your@email.com" id="email-in">
+      <button class="btn btn-pri" onclick="handleNotify()" style="padding:13px 20px;font-size:14px;border-radius:10px;white-space:nowrap;">Notify Me →</button>
+    </div>
+    <div class="notify-sub rv d3">No spam. Unsubscribe any time.</div>
+  </div>
+</section>
+
+<footer>
+  <a href="/" class="logo">FASS<em>AH</em></a>
+  <ul class="foot-links">
+    <li><a href="/app">Map</a></li>
+    <li><a href="/download">App</a></li>
+    <li><a href="/about">Mission</a></li>
+    <li><a href="mailto:hello@fassah.com">Contact</a></li>
+    <li><a href="#">Privacy</a></li>
+  </ul>
+  <div class="foot-copy">© 2025 Fassah. Free forever.</div>
+</footer>
+
+<script>
+  const prog = document.getElementById('prog');
+  const nav  = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+    prog.style.width = (pct * 100) + '%';
+    nav.classList.toggle('up', window.scrollY > 24);
+  }, { passive: true });
+
+  const obs = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); obs.unobserve(e.target); } }), { threshold: 0.1, rootMargin: '0px 0px -20px 0px' });
+  document.querySelectorAll('.rv').forEach(el => obs.observe(el));
+  setTimeout(() => document.querySelectorAll('.app-hero .rv').forEach(el => el.classList.add('in')), 80);
+
+  function handleNotify() {
+    const val = document.getElementById('email-in').value.trim();
+    if (!val || !val.includes('@')) { document.getElementById('email-in').focus(); return; }
+    const btn = document.querySelector('[onclick="handleNotify()"]');
+    btn.textContent = '✓ You\'re on the list!';
+    btn.style.background = '#16a34a';
+    btn.disabled = true;
+  }
+</script>
+</body>
+</html>
